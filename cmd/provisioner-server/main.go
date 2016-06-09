@@ -10,7 +10,7 @@ import (
 	"github.com/resin-os/resin-provisioner/provisioner"
 )
 
-var api = provisioner.New()
+var api *provisioner.Provisioner
 
 func init() {
 	// show date/time in log output.
@@ -36,17 +36,21 @@ func handleSignals() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s [socket path]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "usage: %s [socket path] [config.json path]\n",
+		os.Args[0])
 	os.Exit(1)
 }
 
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < 3 {
 		usage()
 	}
 
-	path := os.Args[1]
+	socketPath, configPath := os.Args[1], os.Args[2]
+
+	api = provisioner.New(configPath)
 	handleSignals()
+
 	log.Printf("Started.")
-	api.Serve(path)
+	api.Serve(socketPath)
 }
