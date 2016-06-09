@@ -13,7 +13,7 @@ type Api struct {
 
 func New(configPath string) *Api {
 	ret := &Api{ConfigPath: configPath}
-	ret.initApi()
+	ret.initSocket()
 
 	return ret
 }

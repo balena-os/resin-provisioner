@@ -27,7 +27,7 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (a *Api) initApi() {
+func (a *Api) initSocket() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/provision", a.provision).Methods("GET", "POST")
