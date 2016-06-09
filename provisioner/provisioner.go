@@ -5,14 +5,14 @@ import (
 	"net/http"
 )
 
-type Provisioner struct {
+type Api struct {
 	ConfigPath string
-	listener net.Listener
-	server   *http.Server
+	listener   net.Listener
+	server     *http.Server
 }
 
-func New(configPath string) *Provisioner {
-	ret := &Provisioner{ConfigPath:configPath}
+func New(configPath string) *Api {
+	ret := &Api{ConfigPath: configPath}
 	ret.initApi()
 
 	return ret

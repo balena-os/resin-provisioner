@@ -10,7 +10,7 @@ import (
 	"github.com/resin-os/resin-provisioner/provisioner"
 )
 
-var api *provisioner.Provisioner
+var api *provisioner.Api
 
 func init() {
 	// show date/time in log output.
