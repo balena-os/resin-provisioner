@@ -17,7 +17,7 @@ func usage() {
 }
 
 func main() {
-	if len(os.Args) < 3 {
+	if len(os.Args) < 2 {
 		usage()
 	}
 
