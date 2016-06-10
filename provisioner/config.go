@@ -2,9 +2,6 @@ package provisioner
 
 import "io/ioutil"
 
-// IMPORTANT: If the config.json structure changes from the below, we will
-// DELETE fields that aren't reflected here.
-
 type Config struct {
 	ApplicationId string  `json:"applicationId"`
 	ApiKey        string  `json:"apikey"`
@@ -14,6 +11,9 @@ type Config struct {
 	Uuid          string  `json:"uuid,omitempty"`
 	RegisteredAt  float64 `json:"registered_at,omitempty"`
 	DeviceId      float64 `json:"deviceId,omitempty"`
+
+	// See json.go/parseConfig() for more details on what this is for.
+	InitialRaw map[string]interface{} `json:"-"`
 }
 
 func (a *Api) readConfig() (*Config, error) {
@@ -25,7 +25,7 @@ func (a *Api) readConfig() (*Config, error) {
 }
 
 func (a *Api) writeConfig(conf *Config) error {
-	if str, err := stringify(conf); err != nil {
+	if str, err := stringifyConfig(conf); err != nil {
 		return err
 	} else {
 		return atomicWrite(a.ConfigPath, str)
