@@ -25,7 +25,7 @@ func usage() {
 
 func tryGet(client *SocketClient, path string) {
 	if str, err := client.Get(path); err == nil {
-		log.Printf("GET  /%s: '%s'\n", path, str)
+		log.Printf("GET  /%s: %s", path, str)
 	} else {
 		log.Printf("GET  /%s: ERROR: %s\n", path, err)
 	}
@@ -33,7 +33,7 @@ func tryGet(client *SocketClient, path string) {
 
 func tryPost(client *SocketClient, path, json string) {
 	if str, err := client.PostJsonString(path, json); err == nil {
-		log.Printf("POST /%s: '%s'\n", path, str)
+		log.Printf("POST /%s: %s", path, str)
 	} else {
 		log.Printf("POST /%s: ERROR: %s\n", path, err)
 	}
