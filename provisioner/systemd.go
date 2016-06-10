@@ -47,3 +47,15 @@ func (c *dbusConnection) UnitStatus(name string) (status *dbus.UnitStatus, err e
 func (c *dbusConnection) SupervisorStatus() (*dbus.UnitStatus, error) {
 	return c.UnitStatus(SUPERVISOR_NAME)
 }
+
+func (c *dbusConnection) SupervisorRunning() (ret bool, err error) {
+	if status, err := c.SupervisorStatus(); err != nil {
+		return false, err
+	} else {
+		running := status != nil &&
+			status.LoadState == "loaded" &&
+			status.ActiveState == "active"
+
+		return running, nil
+	}
+}
