@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (a *Api) initSocket() {
+func (a *Api) initServer() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/provisioned", a.provisionedHandler).Methods("GET")

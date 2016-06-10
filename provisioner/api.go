@@ -20,7 +20,7 @@ type ProvisionOpts struct {
 
 func New(configPath string) *Api {
 	ret := &Api{ConfigPath: configPath}
-	ret.initSocket()
+	ret.initServer()
 
 	return ret
 }
