@@ -44,6 +44,6 @@ func (c *dbusConnection) UnitStatus(name string) (status *dbus.UnitStatus, err e
 	return
 }
 
-func (c *dbusConnection) SupervisorStatus() (status *dbus.UnitStatus, err error) {
+func (c *dbusConnection) SupervisorStatus() (*dbus.UnitStatus, error) {
 	return c.UnitStatus(SUPERVISOR_NAME)
 }
