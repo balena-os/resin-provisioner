@@ -16,6 +16,18 @@ func reportError(status int, writer http.ResponseWriter, req *http.Request, err 
 	fmt.Fprintf(writer, err.Error())
 }
 
+func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string {
+	// req.Body doesn't need to be closed by us.
+	if str, err := readerToString(req.Body); err != nil {
+		reportError(500, writer, req,
+			fmt.Errorf("Cannot convert reader to string: %s", err))
+
+		return ""
+	} else {
+		return str
+	}
+}
+
 func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
@@ -26,12 +38,7 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 		}
 
 	case "POST":
-		// req.Body doesn't need to be closed by us.
-		if str, err := readerToString(req.Body); err != nil {
-			writer.WriteHeader(501)
-			fmt.Fprintf(writer,
-				"Cannot convert reader to string: %s", err)
-		} else {
+		if str := readPostBodyReportErr(writer, req); str != "" {
 			fmt.Fprintf(writer, "Received: '%s'", str)
 		}
 
