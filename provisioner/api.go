@@ -12,6 +12,12 @@ type Api struct {
 	server     *http.Server
 }
 
+type ProvisionOpts struct {
+	UserId        string `json:"userId"`
+	ApplicationId string `json:"applicationId"`
+	ApiKey        string `json:"apikey"`
+}
+
 func New(configPath string) *Api {
 	ret := &Api{ConfigPath: configPath}
 	ret.initSocket()

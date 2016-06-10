@@ -1,26 +1,6 @@
 package provisioner
 
-import (
-	"encoding/json"
-	"io/ioutil"
-)
-
-type ProvisionOpts struct {
-	UserId        string `json:"userId"`
-	ApplicationId string `json:"applicationId"`
-	ApiKey        string `json:"apikey"`
-}
-
-type Config struct {
-	ApplicationId string  `json:"applicationId"`
-	ApiKey        string  `json:"apikey"`
-	UserId        string  `json:"userId"`
-	Username      string  `json:"username"`
-	DeviceType    string  `json:"deviceType"`
-	Uuid          string  `json:"uuid,omitempty"`
-	RegisteredAt  float64 `json:"registered_at,omitempty"`
-	DeviceId      float64 `json:"deviceId,omitempty"`
-}
+import "encoding/json"
 
 func stringify(val interface{}) (ret string, err error) {
 	var bytes []byte
@@ -32,28 +12,14 @@ func stringify(val interface{}) (ret string, err error) {
 	return
 }
 
-func parseProvisionOpts(str string) (opts *ProvisionOpts, err error) {
-	opts = new(ProvisionOpts)
-	err = json.Unmarshal([]byte(str), opts)
+func parseProvisionOpts(str string) (*ProvisionOpts, error) {
+	ret := new(ProvisionOpts)
 
-	return
+	return ret, json.Unmarshal([]byte(str), ret)
 }
 
-func (a *Api) readConfig() (conf *Config, err error) {
-	var bytes []byte
+func parseConfig(str string) (*Config, error) {
+	ret := new(Config)
 
-	if bytes, err = ioutil.ReadFile(a.ConfigPath); err == nil {
-		conf = new(Config)
-		err = json.Unmarshal(bytes, conf)
-	}
-
-	return
-}
-
-func (a *Api) writeConfig(conf *Config) error {
-	if str, err := stringify(conf); err != nil {
-		return err
-	} else {
-		return atomicWrite(a.ConfigPath, str)
-	}
+	return ret, json.Unmarshal([]byte(str), ret)
 }
