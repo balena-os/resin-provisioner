@@ -56,18 +56,20 @@ func atomicWrite(path, content string) error {
 	}
 }
 
-func reportError(status int, writer http.ResponseWriter, req *http.Request, err error) {
-	log.Printf("ERROR: %s %s: %s\n", req.Method, req.URL.Path, err)
+func reportError(status int, writer http.ResponseWriter, req *http.Request,
+	err error, userErr string) {
+	log.Printf("ERROR: %s %s: %s (%s)\n", req.Method, req.URL.Path, err,
+		userErr)
 
 	writer.WriteHeader(status)
-	fmt.Fprintf(writer, err.Error())
+	fmt.Fprintf(writer, "ERROR: %s", userErr)
 }
 
 func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string {
 	// req.Body doesn't need to be closed by us.
 	if str, err := readerToString(req.Body); err != nil {
-		reportError(500, writer, req,
-			fmt.Errorf("Cannot convert reader to string: %s", err))
+		reportError(500, writer, req, err,
+			"Can't convert read to string")
 
 		return ""
 	} else {
