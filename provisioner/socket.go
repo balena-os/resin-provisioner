@@ -25,7 +25,8 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 		// req.Body doesn't need to be closed by us.
 		if str, err := readerToString(req.Body); err != nil {
 			writer.WriteHeader(501)
-			fmt.Fprintf(writer, "Cannot decode: %s", err)
+			fmt.Fprintf(writer,
+				"Cannot convert reader to string: %s", err)
 		} else {
 			fmt.Fprintf(writer, "Received: '%s'", str)
 		}
