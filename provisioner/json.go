@@ -1,6 +1,6 @@
 package provisioner
 
-import  "encoding/json"
+import "encoding/json"
 
 func stringifyConfig(conf *Config) (string, error) {
 	var exportedRaw map[string]interface{}
