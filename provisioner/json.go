@@ -22,6 +22,16 @@ type Config struct {
 	DeviceId      float64 `json:"deviceId,omitempty"`
 }
 
+func stringify(val interface{}) (ret string, err error) {
+	var bytes []byte
+
+	if bytes, err = json.Marshal(val); err == nil {
+		ret = string(bytes)
+	}
+
+	return
+}
+
 func parseProvisionOpts(str string) (opts *ProvisionOpts, err error) {
 	opts = new(ProvisionOpts)
 	err = json.Unmarshal([]byte(str), opts)
@@ -40,18 +50,8 @@ func (a *Api) readConfig() (conf *Config, err error) {
 	return
 }
 
-func stringifyConfig(conf *Config) (ret string, err error) {
-	var bytes []byte
-
-	if bytes, err = json.Marshal(conf); err == nil {
-		ret = string(bytes)
-	}
-
-	return
-}
-
 func (a *Api) writeConfig(conf *Config) error {
-	if str, err := stringifyConfig(conf); err != nil {
+	if str, err := stringify(conf); err != nil {
 		return err
 	} else {
 		return atomicWrite(a.ConfigPath, str)
