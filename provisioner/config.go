@@ -28,3 +28,7 @@ func (a *Api) writeConfig(conf *Config) error {
 		return atomicWrite(a.ConfigPath, str)
 	}
 }
+
+func (c *Config) IsProvisioned() bool {
+	return c.ApplicationId != "" && c.ApiKey != ""
+}

@@ -26,7 +26,11 @@ func New(configPath string) *Api {
 }
 
 func (a *Api) IsProvisioned() (bool, error) {
-	return false, nil
+	if conf, err := a.readConfig(); err != nil {
+		return false, fmt.Errorf("Cannot read config: %s", err)
+	} else {
+		return conf.IsProvisioned(), nil
+	}
 }
 
 func (a *Api) IsProvisionedJson() (ret string, err error) {
