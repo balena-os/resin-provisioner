@@ -59,3 +59,24 @@ func (c *dbusConnection) SupervisorRunning() (ret bool, err error) {
 		return running, nil
 	}
 }
+
+func (c *dbusConnection) EnableStartUnit(name, path string) error {
+	ch := make(chan string)
+
+	if _, _, err := c.EnableUnitFiles([]string{path}, false, false); err != nil {
+		return err
+	} else if _, err := c.StartUnit(name, "replace", ch); err != nil {
+		return err
+	}
+
+	// Block until attempt to start unit succeeds/fails.
+	if result := <-ch; result != "done" {
+		return fmt.Errorf("Start failed due to %s.", result)
+	}
+
+	return nil
+}
+
+func (c *dbusConnection) SupervisorEnableStart() error {
+	return c.EnableStartUnit(SUPERVISOR_NAME, SUPERVISOR_PATH)
+}
