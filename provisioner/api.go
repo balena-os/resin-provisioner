@@ -43,6 +43,10 @@ func (a *Api) IsProvisionedJson() (ret string, err error) {
 	return
 }
 
+func (a *Api) Provision(opts *ProvisionOpts) error {
+	return nil
+}
+
 func (a *Api) ConfigJson() (string, error) {
 	if conf, err := a.readConfig(); err != nil {
 		return "", fmt.Errorf("Cannot read config: %s", err)
