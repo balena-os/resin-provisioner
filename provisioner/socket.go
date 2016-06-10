@@ -31,10 +31,10 @@ func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string
 func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		if ret, err := a.getProvision(); err != nil {
+		if str, err := a.getProvision(); err != nil {
 			reportError(404, writer, req, err)
 		} else {
-			fmt.Fprintf(writer, ret)
+			fmt.Fprintf(writer, str)
 		}
 
 	case "POST":
