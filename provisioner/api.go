@@ -55,7 +55,23 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		return fmt.Errorf("Invalid options.")
 	}
 
-	return nil
+	if conf, err := a.readConfig(); err != nil {
+		return fmt.Errorf("Cannot read config: %s", err)
+	} else {
+		// First check to see whether config.json has changed from
+		// underneath us.
+		if conf.IsProvisioned() {
+			return fmt.Errorf("Already provisioned.")
+		}
+
+		// Ok, now we go for it.
+
+		conf.UserId = opts.UserId
+		conf.ApplicationId = opts.ApplicationId
+		conf.ApiKey = opts.ApiKey
+
+		return a.writeConfig(conf)
+	}
 }
 
 func (a *Api) ConfigJson() (string, error) {
