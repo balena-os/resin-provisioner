@@ -65,5 +65,10 @@ func parseConfig(str string) (*Config, error) {
 	// This way we avoid stripping newly created fields in config.json when
 	// we only wanted to update existing known ones.
 
+	// IMPORTANT: This won't work for any nested structs as we simply
+	// overwrite exported fields in the generated output, more work would
+	// need to be done to deal with that which isn't hugely worth it for the
+	// provisioner.
+
 	return ret, nil
 }
