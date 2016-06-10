@@ -2,10 +2,10 @@ package provisioner
 
 import (
 	"fmt"
-	"net/http"
-	"log"
 	"io"
 	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
 )
 
