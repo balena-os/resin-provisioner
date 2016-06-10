@@ -51,7 +51,7 @@ func main() {
 	tryGet(client, "provision")
 	tryGet(client, "config")
 
-	tryPost(client, "provisioned", testJson)
 	tryPost(client, "provision", testJson)
-	tryPost(client, "config", testJson)
+	//tryPost(client, "provisioned", testJson)
+	//tryPost(client, "config", testJson)
 }
