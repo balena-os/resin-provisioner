@@ -25,7 +25,21 @@ func New(configPath string) *Api {
 	return ret
 }
 
-func (a *Api) getProvision() (string, error) {
+func (a *Api) IsProvisioned() (bool, error) {
+	return false, nil
+}
+
+func (a *Api) getProvision() (ret string, err error) {
+	var provisioned bool
+
+	if provisioned, err = a.IsProvisioned(); err == nil {
+		ret = fmt.Sprintf(`{"provisioned":, %t}`, provisioned)
+	}
+
+	return
+}
+
+func (a *Api) getConfig() (string, error) {
 	if conf, err := a.readConfig(); err != nil {
 		return "", fmt.Errorf("Cannot read config: %s", err)
 	} else if str, err := stringify(conf); err != nil {
