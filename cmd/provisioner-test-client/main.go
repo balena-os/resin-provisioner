@@ -47,8 +47,11 @@ func main() {
 	path := os.Args[1]
 	client := NewSocketClient(path)
 
+	tryGet(client, "provisioned")
 	tryGet(client, "provision")
 	tryGet(client, "config")
 
+	tryPost(client, "provisioned", testJson)
 	tryPost(client, "provision", testJson)
+	tryPost(client, "config", testJson)
 }
