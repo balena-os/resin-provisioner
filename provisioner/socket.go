@@ -11,7 +11,15 @@ import (
 func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		fmt.Fprintf(writer, "{}")
+		if conf, err := a.readConfig(); err != nil {
+			writer.WriteHeader(404)
+			fmt.Fprintf(writer, "Cannot read config: %s", err)
+		} else if str, err := stringifyConfig(conf); err != nil {
+			writer.WriteHeader(404)
+			fmt.Fprintf(writer, "Cannot stringify config: %s", err)
+		} else {
+			fmt.Fprintf(writer, str)
+		}
 
 	case "POST":
 		// req.Body doesn't need to be closed by us.
