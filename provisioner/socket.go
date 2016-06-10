@@ -31,7 +31,7 @@ func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string
 func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		if str, err := a.getProvision(); err != nil {
+		if str, err := a.IsProvisionedJson(); err != nil {
 			reportError(404, writer, req, err)
 		} else {
 			fmt.Fprintf(writer, str)
@@ -55,7 +55,7 @@ func (a *Api) configHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if str, err := a.getConfig(); err != nil {
+	if str, err := a.ConfigJson(); err != nil {
 		reportError(404, writer, req, err)
 	} else {
 		fmt.Fprintf(writer, str)

@@ -29,7 +29,7 @@ func (a *Api) IsProvisioned() (bool, error) {
 	return false, nil
 }
 
-func (a *Api) getProvision() (ret string, err error) {
+func (a *Api) IsProvisionedJson() (ret string, err error) {
 	var provisioned bool
 
 	if provisioned, err = a.IsProvisioned(); err == nil {
@@ -39,7 +39,7 @@ func (a *Api) getProvision() (ret string, err error) {
 	return
 }
 
-func (a *Api) getConfig() (string, error) {
+func (a *Api) ConfigJson() (string, error) {
 	if conf, err := a.readConfig(); err != nil {
 		return "", fmt.Errorf("Cannot read config: %s", err)
 	} else if str, err := stringify(conf); err != nil {
