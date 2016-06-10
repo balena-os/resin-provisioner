@@ -1,6 +1,9 @@
 package provisioner
 
 import (
+	"fmt"
+	"net/http"
+	"log"
 	"io"
 	"io/ioutil"
 	"os"
@@ -50,5 +53,24 @@ func atomicWrite(path, content string) error {
 		}
 
 		return os.Rename(name, path)
+	}
+}
+
+func reportError(status int, writer http.ResponseWriter, req *http.Request, err error) {
+	log.Printf("ERROR: %s %s: %s\n", req.Method, req.URL.Path, err)
+
+	writer.WriteHeader(status)
+	fmt.Fprintf(writer, err.Error())
+}
+
+func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string {
+	// req.Body doesn't need to be closed by us.
+	if str, err := readerToString(req.Body); err != nil {
+		reportError(500, writer, req,
+			fmt.Errorf("Cannot convert reader to string: %s", err))
+
+		return ""
+	} else {
+		return str
 	}
 }
