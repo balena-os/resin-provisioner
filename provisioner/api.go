@@ -76,7 +76,13 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		conf.ApplicationId = opts.ApplicationId
 		conf.ApiKey = opts.ApiKey
 
-		return a.writeConfig(conf)
+		if err := a.writeConfig(conf); err != nil {
+			return err
+		}
+
+		// Next we need to enable the supervisor systemd service.
+
+		return nil
 	}
 }
 
