@@ -1,9 +1,6 @@
 package provisioner
 
-import (
-	"encoding/json"
-	"log"
-)
+import  "encoding/json"
 
 func stringifyConfig(conf *Config) (string, error) {
 	var exportedRaw map[string]interface{}
@@ -24,12 +21,8 @@ func stringifyConfig(conf *Config) (string, error) {
 	// We are mutated this field but it's fine.
 	raw := conf.InitialRaw
 	for name, val := range exportedRaw {
-		if _, has := raw[name]; has {
-			log.Printf("ivg: %s\n", name)
-			raw[name] = val
-		} else {
-			log.Printf("WARNING: JSON: Exported '%s' not found in raw data.\n")
-		}
+		// TODO: Deal with nested structs correctly.
+		raw[name] = val
 	}
 
 	bytes, err := json.Marshal(raw)
