@@ -24,6 +24,14 @@ func tryGet(client *SocketClient, path string) {
 	}
 }
 
+func tryPost(client *SocketClient, path, json string) {
+	if str, err := client.PostJsonString(path, json); err == nil {
+		log.Printf("POST /%s: '%s'\n", path, str)
+	} else {
+		log.Printf("POST /%s: ERROR: %s\n", path, err)
+	}
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		usage()
@@ -35,10 +43,5 @@ func main() {
 	tryGet(client, "provision")
 	tryGet(client, "config")
 
-	json := `{"foo": "abc", "bar": 3}`
-	if str, err := client.PostJsonString("provision", json); err == nil {
-		log.Printf("POST /provision: '%s'\n", str)
-	} else {
-		log.Printf("POST /provision: ERROR: %s\n", err)
-	}
+	tryPost(client, "provision", `{"foo": "abc", "bar": 3}`)
 }
