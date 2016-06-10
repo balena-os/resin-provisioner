@@ -36,7 +36,8 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 		}
 
 	default:
-		reportError(400, writer, req, fmt.Errorf("Unspported method %s.", req.Method))
+		reportError(400, writer, req,
+			fmt.Errorf("Unspported method %s.", req.Method))
 	}
 }
 
