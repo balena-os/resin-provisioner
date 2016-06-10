@@ -44,6 +44,12 @@ func (a *Api) IsProvisionedJson() (ret string, err error) {
 }
 
 func (a *Api) Provision(opts *ProvisionOpts) error {
+	if provisioned, err := a.IsProvisioned(); err != nil {
+		return err
+	} else if provisioned {
+		return fmt.Errorf("Already provisioned.")
+	}
+
 	return nil
 }
 
