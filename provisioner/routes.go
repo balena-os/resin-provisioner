@@ -27,6 +27,7 @@ func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 		}
 
 	default:
+		// Shouldn't be possible.
 		reportError(400, writer, req,
 			fmt.Errorf("Unspported method %s.", req.Method))
 	}
@@ -34,6 +35,7 @@ func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 
 func (a *Api) configHandler(writer http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
+		// Shouldn't be possible.
 		reportError(400, writer, req,
 			fmt.Errorf("Unspported method %s.", req.Method))
 		return
