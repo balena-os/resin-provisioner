@@ -42,7 +42,7 @@ func do(uri string, action func(string) (*http.Response, error)) (ret string, er
 
 	var bytes []byte
 	if bytes, err = ioutil.ReadAll(res.Body); err == nil {
-		ret = string(bytes)
+		ret = fmt.Sprintf("%s: %s", res.Status, bytes)
 	}
 
 	return
