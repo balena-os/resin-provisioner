@@ -33,6 +33,7 @@ func main() {
 	client := NewSocketClient(path)
 
 	tryGet(client, "provision")
+	tryGet(client, "config")
 
 	json := `{"foo": "abc", "bar": 3}`
 	if str, err := client.PostJsonString("provision", json); err == nil {
