@@ -28,8 +28,10 @@ func New(configPath string) *Api {
 func (a *Api) IsProvisioned() (bool, error) {
 	if conf, err := a.readConfig(); err != nil {
 		return false, fmt.Errorf("Cannot read config: %s", err)
+	} else if !conf.IsProvisioned() {
+		return false, nil
 	} else {
-		return conf.IsProvisioned(), nil
+		return supervisorDbusRunning()
 	}
 }
 
@@ -61,7 +63,11 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		// First check to see whether config.json has changed from
 		// underneath us.
 		if conf.IsProvisioned() {
-			return fmt.Errorf("Already provisioned.")
+			if running, err := supervisorDbusRunning(); err != nil {
+				return err
+			} else if running {
+				return fmt.Errorf("Already provisioned.")
+			}
 		}
 
 		// Ok, now we go for it.

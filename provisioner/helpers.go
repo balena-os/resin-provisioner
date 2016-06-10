@@ -90,3 +90,13 @@ func isInteger(str string) bool {
 func isValidApiKey(str string) bool {
 	return apiKeyRegexp.Match([]byte(str))
 }
+
+func supervisorDbusRunning() (bool, error) {
+	if dbus, err := NewDbus(); err != nil {
+		return false, err
+	} else {
+		defer dbus.Close()
+
+		return dbus.SupervisorRunning()
+	}
+}
