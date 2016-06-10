@@ -81,8 +81,13 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		}
 
 		// Next we need to enable the supervisor systemd service.
+		if conn, err := NewDbus(); err != nil {
+			return err
+		} else {
+			defer conn.Close()
 
-		return nil
+			return conn.SupervisorEnableStart()
+		}
 	}
 }
 
