@@ -6,6 +6,13 @@ import (
 	"os"
 )
 
+var testJson = `{
+	"userId": "12345",
+	"ApplicationId": "45678",
+	"ApiKey": "aNdjvg398djeh389eEEHEjejkhsaxhsZ"
+}
+`
+
 func init() {
 	// show date/time in log output.
 	log.SetFlags(log.LstdFlags)
@@ -43,5 +50,5 @@ func main() {
 	tryGet(client, "provision")
 	tryGet(client, "config")
 
-	tryPost(client, "provision", `{"foo": "abc", "bar": 3}`)
+	tryPost(client, "provision", testJson)
 }
