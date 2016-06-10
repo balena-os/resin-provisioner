@@ -28,7 +28,7 @@ func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string
 	}
 }
 
-func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
+func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		if str, err := a.getProvision(); err != nil {
@@ -51,7 +51,7 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 func (a *Api) initSocket() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/provision", a.provision).Methods("GET", "POST")
+	router.HandleFunc("/provision", a.provisionHandler).Methods("GET", "POST")
 
 	a.server = &http.Server{Handler: router}
 }
