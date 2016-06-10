@@ -2,18 +2,25 @@ package provisioner
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
+func reportError(status int, writer http.ResponseWriter, req *http.Request, err error) {
+	log.Printf("ERROR: %s %s: %s\n", req.Method, req.URL.Path, err)
+
+	writer.WriteHeader(status)
+	fmt.Fprintf(writer, err.Error())
+}
+
 func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		if ret, err := a.getProvision(); err != nil {
-			writer.WriteHeader(404)
-			fmt.Fprintf(writer, err.Error())
+			reportError(404, writer, req, err)
 		} else {
 			fmt.Fprintf(writer, ret)
 		}
@@ -29,7 +36,7 @@ func (a *Api) provision(writer http.ResponseWriter, req *http.Request) {
 		}
 
 	default:
-		writer.WriteHeader(400)
+		reportError(400, writer, req, fmt.Errorf("Unspported method %s.", req.Method))
 	}
 }
 
