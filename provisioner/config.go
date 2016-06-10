@@ -2,6 +2,9 @@ package provisioner
 
 import "io/ioutil"
 
+// IMPORTANT: If the config.json structure changes from the below, we will
+// DELETE fields that aren't reflected here.
+
 type Config struct {
 	ApplicationId string  `json:"applicationId"`
 	ApiKey        string  `json:"apikey"`
