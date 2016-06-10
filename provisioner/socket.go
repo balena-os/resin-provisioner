@@ -48,10 +48,25 @@ func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (a *Api) configHandler(writer http.ResponseWriter, req *http.Request) {
+	if req.Method != "GET" {
+		reportError(400, writer, req,
+			fmt.Errorf("Unspported method %s.", req.Method))
+		return
+	}
+
+	if str, err := a.getConfig(); err != nil {
+		reportError(404, writer, req, err)
+	} else {
+		fmt.Fprintf(writer, str)
+	}
+}
+
 func (a *Api) initSocket() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/provision", a.provisionHandler).Methods("GET", "POST")
+	router.HandleFunc("/config", a.configHandler).Methods("GET")
 
 	a.server = &http.Server{Handler: router}
 }
