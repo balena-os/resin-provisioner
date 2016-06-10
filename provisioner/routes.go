@@ -18,8 +18,12 @@ func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 	case "GET":
 		a.provisionedHandler(writer, req)
 	case "POST":
-		if str := readPostBodyReportErr(writer, req); str != "" {
-			fmt.Fprintf(writer, "Received: '%s'", str)
+		if str := readPostBodyReportErr(writer, req); str == "" {
+			return
+		} else if opts, err := parseProvisionOpts(str); err != nil {
+			reportError(404, writer, req, err)
+		} else if err := a.Provision(opts); err != nil {
+			reportError(404, writer, req, err)
 		}
 
 	default:
