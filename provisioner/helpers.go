@@ -7,7 +7,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 )
+
+var apiKeyRegexp = regexp.MustCompile("[a-zA-Z0-9]+")
 
 func checkSocket(path string) error {
 	// The socket file not existing means we can create it.
@@ -75,4 +79,14 @@ func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string
 	} else {
 		return str
 	}
+}
+
+func isInteger(str string) bool {
+	_, err := strconv.Atoi(str)
+
+	return err == nil
+}
+
+func isValidApiKey(str string) bool {
+	return apiKeyRegexp.Match([]byte(str))
 }

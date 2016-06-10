@@ -50,6 +50,11 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		return fmt.Errorf("Already provisioned.")
 	}
 
+	if !isInteger(opts.UserId) || !isInteger(opts.ApplicationId) ||
+		!isValidApiKey(opts.ApiKey) {
+		return fmt.Errorf("Invalid options.")
+	}
+
 	return nil
 }
 
