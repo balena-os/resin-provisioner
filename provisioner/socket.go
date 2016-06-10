@@ -28,15 +28,18 @@ func readPostBodyReportErr(writer http.ResponseWriter, req *http.Request) string
 	}
 }
 
+func (a *Api) provisionedHandler(writer http.ResponseWriter, req *http.Request) {
+	if str, err := a.IsProvisionedJson(); err != nil {
+		reportError(404, writer, req, err)
+	} else {
+		fmt.Fprintf(writer, str)
+	}
+}
+
 func (a *Api) provisionHandler(writer http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		if str, err := a.IsProvisionedJson(); err != nil {
-			reportError(404, writer, req, err)
-		} else {
-			fmt.Fprintf(writer, str)
-		}
-
+		a.provisionedHandler(writer, req)
 	case "POST":
 		if str := readPostBodyReportErr(writer, req); str != "" {
 			fmt.Fprintf(writer, "Received: '%s'", str)
@@ -65,6 +68,7 @@ func (a *Api) configHandler(writer http.ResponseWriter, req *http.Request) {
 func (a *Api) initSocket() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/provisioned", a.provisionedHandler).Methods("GET")
 	router.HandleFunc("/provision", a.provisionHandler).Methods("GET", "POST")
 	router.HandleFunc("/config", a.configHandler).Methods("GET")
 
