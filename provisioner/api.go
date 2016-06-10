@@ -33,7 +33,7 @@ func (a *Api) IsProvisionedJson() (ret string, err error) {
 	var provisioned bool
 
 	if provisioned, err = a.IsProvisioned(); err == nil {
-		ret = fmt.Sprintf(`{"provisioned":, %t}`, provisioned)
+		ret = fmt.Sprintf(`{"provisioned": %t}`, provisioned)
 	}
 
 	return
