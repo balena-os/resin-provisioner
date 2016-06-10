@@ -10,7 +10,7 @@ function fatal() {
 [ -e /tmp/config.json ] || fatal "ERROR: Put test config.json in /tmp."
 
 ./build.sh
-$GOPATH/bin/provisioner-server /tmp/provisioner.sock /tmp/config.json &
+$GOPATH/bin/provisioner-server /tmp/provisioner.sock /tmp/config.json &>/dev/null &
 server_pid=$!
 
 # Give some time for startup.
