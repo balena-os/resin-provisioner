@@ -34,10 +34,9 @@ func readerToString(r io.Reader) (ret string, err error) {
 	return
 }
 
+// Try to be atomic - write output to temporary file, sync it, rename it
+// to the target file.
 func atomicWrite(path, content string) error {
-	// Try to be atomic - write output to temporary file, sync it, rename it
-	// to the target file.
-
 	// "" is the dir - defaults to system temp dir, "provisioner" is prefix.
 	if tmpFile, err := ioutil.TempFile("", "provisioner"); err != nil {
 		return err
