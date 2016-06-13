@@ -4,14 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-)
 
-var testJson = `{
-	"userId": "12345",
-	"ApplicationId": "45678",
-	"ApiKey": "aNdjvg398djeh389eEEHEjejkhsaxhsZ"
-}
-`
+	"github.com/resin-os/resin-provisioner/provisioner"
+)
 
 func init() {
 	// show date/time in log output.
@@ -19,39 +14,28 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintf(os.Stderr, "usage: %s [socket path]\n", os.Args[0])
+	fmt.Fprintf(os.Stderr, "usage: %s [config path] [user id] [application id] [api key]\n",
+		os.Args[0])
 	os.Exit(1)
 }
 
-func tryGet(client *SocketClient, path string) {
-	if str, err := client.Get(path); err == nil {
-		log.Printf("GET  /%s: %s", path, str)
-	} else {
-		log.Printf("GET  /%s: ERROR: %s\n", path, err)
-	}
-}
-
-func tryPost(client *SocketClient, path, json string) {
-	if str, err := client.PostJsonString(path, json); err == nil {
-		log.Printf("POST /%s: %s", path, str)
-	} else {
-		log.Printf("POST /%s: ERROR: %s\n", path, err)
-	}
-}
-
 func main() {
-	if len(os.Args) < 2 {
+	if len(os.Args) < 5 {
 		usage()
 	}
 
-	path := os.Args[1]
-	client := NewSocketClient(path)
+	configPath := os.Args[1]
+	userId := os.Args[2]
+	appId := os.Args[3]
+	apiKey := os.Args[4]
 
-	tryGet(client, "provisioned")
-	tryGet(client, "provision")
-	tryGet(client, "config")
+	opts := &provisioner.ProvisionOpts{
+		UserId: userId, ApplicationId: appId, ApiKey: apiKey}
 
-	tryPost(client, "provision", testJson)
-	//tryPost(client, "provisioned", testJson)
-	//tryPost(client, "config", testJson)
+	api := provisioner.New(configPath)
+
+	if err := api.Provision(opts); err != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		os.Exit(1)
+	}
 }
