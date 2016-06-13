@@ -4,7 +4,7 @@ import "io/ioutil"
 
 type Config struct {
 	ApplicationId string  `json:"applicationId"`
-	ApiKey        string  `json:"apikey"`
+	ApiKey        string  `json:"apiKey"`
 	UserId        string  `json:"userId"`
 	Username      string  `json:"username"`
 	DeviceType    string  `json:"deviceType"`
