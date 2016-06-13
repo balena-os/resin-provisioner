@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	pathLib "path"
 	"regexp"
 	"strconv"
 )
@@ -37,8 +38,11 @@ func readerToString(r io.Reader) (ret string, err error) {
 // Try to be atomic - write output to temporary file, sync it, rename it
 // to the target file.
 func atomicWrite(path, content string) error {
-	// "" is the dir - defaults to system temp dir, "provisioner" is prefix.
-	if tmpFile, err := ioutil.TempFile("", "provisioner"); err != nil {
+	// To avoid cross-device rename issues, create the temporary file in
+	// config.json's containing directory.
+	targetDir := pathLib.Dir(path)
+
+	if tmpFile, err := ioutil.TempFile(targetDir, "provisioner"); err != nil {
 		return err
 	} else {
 		name := tmpFile.Name()
