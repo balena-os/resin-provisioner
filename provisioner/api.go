@@ -8,6 +8,18 @@ import (
 
 type ProvisionedState int
 
+type Api struct {
+	ConfigPath string
+	listener   net.Listener
+	server     *http.Server
+}
+
+type ProvisionOpts struct {
+	UserId        string `json:"userId"`
+	ApplicationId string `json:"applicationId"`
+	ApiKey        string `json:"apikey"`
+}
+
 const (
 	Unknown ProvisionedState = iota
 	Unprovisioned
@@ -28,18 +40,6 @@ func (s ProvisionedState) String() string {
 	}
 
 	return "invalid"
-}
-
-type Api struct {
-	ConfigPath string
-	listener   net.Listener
-	server     *http.Server
-}
-
-type ProvisionOpts struct {
-	UserId        string `json:"userId"`
-	ApplicationId string `json:"applicationId"`
-	ApiKey        string `json:"apikey"`
 }
 
 func New(configPath string) *Api {
