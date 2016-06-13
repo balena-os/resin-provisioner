@@ -6,6 +6,30 @@ import (
 	"net/http"
 )
 
+type ProvisionedState int
+
+const (
+	Unknown ProvisionedState = iota
+	Unprovisioned
+	Provisioning
+	Provisioned
+)
+
+func (s ProvisionedState) String() string {
+	switch s {
+	case Unknown:
+		return "unknown"
+	case Unprovisioned:
+		return "unprovisioned"
+	case Provisioning:
+		return "provisioning"
+	case Provisioned:
+		return "provisioned"
+	}
+
+	return "invalid"
+}
+
 type Api struct {
 	ConfigPath string
 	listener   net.Listener
@@ -25,31 +49,30 @@ func New(configPath string) *Api {
 	return ret
 }
 
-func (a *Api) IsProvisioned() (bool, error) {
+// Returns the device provisioned state.
+func (a *Api) State() (ProvisionedState, error) {
 	if conf, err := a.readConfig(); err != nil {
-		return false, fmt.Errorf("Cannot read config: %s", err)
-	} else if !conf.IsProvisioned() {
-		return false, nil
+		return Unknown, fmt.Errorf("Cannot read config: %s", err)
 	} else {
-		return supervisorDbusRunning()
+		return conf.ProvisionedState(), nil
 	}
 }
 
-func (a *Api) IsProvisionedJson() (ret string, err error) {
-	var provisioned bool
+func (a *Api) StateJson() (ret string, err error) {
+	var state ProvisionedState
 
-	if provisioned, err = a.IsProvisioned(); err == nil {
-		ret = fmt.Sprintf(`{"provisioned": %t}`, provisioned)
+	if state, err = a.State(); err == nil {
+		ret = fmt.Sprintf(`{"state": "%s"}`, state)
 	}
 
 	return
 }
 
 func (a *Api) Provision(opts *ProvisionOpts) error {
-	if provisioned, err := a.IsProvisioned(); err != nil {
+	if state, err := a.State(); err != nil {
 		return err
-	} else if provisioned {
-		return fmt.Errorf("Already provisioned.")
+	} else if state != Unprovisioned {
+		return fmt.Errorf("Cannot provision, device is %s.", state)
 	}
 
 	if !isInteger(opts.UserId) || !isInteger(opts.ApplicationId) ||
@@ -62,12 +85,8 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 	} else {
 		// First check to see whether config.json has changed from
 		// underneath us.
-		if conf.IsProvisioned() {
-			if running, err := supervisorDbusRunning(); err != nil {
-				return err
-			} else if running {
-				return fmt.Errorf("Already provisioned.")
-			}
+		if state := conf.ProvisionedState(); state != Unprovisioned {
+			return fmt.Errorf("Cannot provision, device is %s.", state)
 		}
 
 		// Ok, now we go for it.

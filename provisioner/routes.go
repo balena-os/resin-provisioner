@@ -6,7 +6,7 @@ import (
 )
 
 func (a *Api) provisionedHandler(writer http.ResponseWriter, req *http.Request) {
-	if str, err := a.IsProvisionedJson(); err != nil {
+	if str, err := a.StateJson(); err != nil {
 		reportError(404, writer, req, err,
 			"Can't read provisioned status.")
 	} else {

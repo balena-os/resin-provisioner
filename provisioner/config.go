@@ -32,6 +32,14 @@ func (a *Api) writeConfig(conf *Config) error {
 	}
 }
 
-func (c *Config) IsProvisioned() bool {
-	return c.ApplicationId != "" && c.ApiKey != ""
+func (c *Config) ProvisionedState() ProvisionedState {
+	if c.ApplicationId == "" || c.ApiKey == "" {
+		return Unprovisioned
+	}
+
+	if c.RegisteredAt == 0 {
+		return Provisioning
+	}
+
+	return Provisioned
 }
