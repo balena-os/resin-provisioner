@@ -8,10 +8,6 @@ import (
 	pathLib "path"
 )
 
-const (
-	SUPERVISOR_PATH = "/lib/systemd/system/resin-supervisor.service"
-)
-
 type dbusConnection struct {
 	*dbus.Conn
 }
@@ -80,5 +76,10 @@ func (c *dbusConnection) EnableStartUnit(path string) error {
 }
 
 func (c *dbusConnection) SupervisorEnableStart() error {
-	return c.EnableStartUnit(SUPERVISOR_NAME, SUPERVISOR_PATH)
+	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
+		return err
+	}
+
+	// Start the resin update timer too.
+	return c.EnableStartUnit(UPDATE_RESIN_TIMER_PATH)
 }
