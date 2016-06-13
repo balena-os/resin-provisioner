@@ -5,10 +5,10 @@ package provisioner
 import (
 	"fmt"
 	"github.com/coreos/go-systemd/dbus"
+	pathLib "path"
 )
 
 const (
-	SUPERVISOR_NAME = "resin-supervisor.service"
 	SUPERVISOR_PATH = "/lib/systemd/system/resin-supervisor.service"
 )
 
@@ -45,7 +45,8 @@ func (c *dbusConnection) UnitStatus(name string) (status *dbus.UnitStatus, err e
 }
 
 func (c *dbusConnection) SupervisorStatus() (*dbus.UnitStatus, error) {
-	return c.UnitStatus(SUPERVISOR_NAME)
+	name := pathLib.Base(SUPERVISOR_PATH)
+	return c.UnitStatus(name)
 }
 
 func (c *dbusConnection) SupervisorRunning() (ret bool, err error) {
@@ -60,7 +61,8 @@ func (c *dbusConnection) SupervisorRunning() (ret bool, err error) {
 	}
 }
 
-func (c *dbusConnection) EnableStartUnit(name, path string) error {
+func (c *dbusConnection) EnableStartUnit(path string) error {
+	name := pathLib.Base(path)
 	ch := make(chan string)
 
 	if _, _, err := c.EnableUnitFiles([]string{path}, false, false); err != nil {
