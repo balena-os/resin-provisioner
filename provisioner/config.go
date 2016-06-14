@@ -12,9 +12,9 @@ type Config struct {
 	RegisteredAt          float64           `json:"registered_at,omitempty"`
 	DeviceId              float64           `json:"deviceId,omitempty"`
 	Files                 map[string]string `json:"files"`
-	AppUpdatePollInterval int               `json:"appUpdatePollInterval"`
-	ListenPort            int               `json:"listenPort"`
-	VpnPort               int               `json:"vpnPort"`
+	AppUpdatePollInterval string            `json:"appUpdatePollInterval"`
+	ListenPort            string            `json:"listenPort"`
+	VpnPort               string            `json:"vpnPort"`
 	ApiEndpoint           string            `json:"apiEndpoint"`
 	VpnEndpoint           string            `json:"vpnEndpoint"`
 	RegistryEndpoint      string            `json:"registryEndpoint"`
