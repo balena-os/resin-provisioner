@@ -18,7 +18,7 @@ func stringifyConfig(conf *Config) (string, error) {
 		return "", err
 	}
 
-	// We are mutated this field but it's fine.
+	// We are mutating this field but it's fine.
 	raw := conf.InitialRaw
 	for name, val := range exportedRaw {
 		// TODO: Deal with nested structs correctly.

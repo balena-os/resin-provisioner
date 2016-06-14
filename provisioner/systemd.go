@@ -1,7 +1,5 @@
 package provisioner
 
-// TODO: Need to enable update-resin-supervisor.timer.
-
 import (
 	"fmt"
 	"github.com/coreos/go-systemd/dbus"
