@@ -6,11 +6,8 @@ type Config struct {
 	ApplicationId         string  `json:"applicationId"`
 	ApiKey                string  `json:"apiKey"`
 	UserId                string  `json:"userId"`
-	Username              string  `json:"username"`
 	DeviceType            string  `json:"deviceType"`
-	Uuid                  string  `json:"uuid,omitempty"`
 	RegisteredAt          float64 `json:"registered_at,omitempty"`
-	DeviceId              float64 `json:"deviceId,omitempty"`
 	AppUpdatePollInterval string  `json:"appUpdatePollInterval"`
 	ListenPort            string  `json:"listenPort"`
 	VpnPort               string  `json:"vpnPort"`
