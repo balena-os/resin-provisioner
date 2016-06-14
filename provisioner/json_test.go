@@ -12,21 +12,7 @@ var minimalJson = `
 }
 `
 
-var minimalFilesJson = `
-{
-   "deviceType":"raspberrypi3",
-   "pubnubSubscribeKey":"sub-c-abc12345-ab1a-12a1-9876-01ab1abcd8zx",
-   "pubnubPublishKey":"pub-c-abc12345-ab1a-12a1-9876-01ab1abcd8zx",
-   "mixpanelToken":"abcdefghijklmnopqrstuvwxyz123456",
-   "ListenPort":"1234",
-   "files":{
-      "foo": "bar"
-   }
-}
-`
-
-// Ensure the default values are set + not overwritten, without setting the
-// files field.
+// Ensure the default values are set + not overwritten.
 func TestParseMinimalConfigJson(t *testing.T) {
 	if conf, err := parseConfig(minimalJson); err != nil {
 		t.Fatalf("Parse failed: ERROR: %s", err)
@@ -55,25 +41,5 @@ func TestParseMinimalConfigJson(t *testing.T) {
 		if conf.DeltaEndpoint != DefaultConfig.DeltaEndpoint {
 			t.Error("MISMATCH: DeltaEndpoint")
 		}
-
-		for key, val := range conf.Files {
-			if val != DefaultConfig.Files[key] {
-				t.Errorf("MISMATCH: Files[%s] == %s, !%s.",
-					key, val, DefaultConfig.Files[key])
-			}
-		}
-	}
-}
-
-// Ensure the default values are set + not overwritten in files field.
-func TestParseMinimalFilesConfigJson(t *testing.T) {
-	if conf, err := parseConfig(minimalFilesJson); err != nil {
-		t.Fatalf("Parse failed: ERROR: %s", err)
-	} else if len(conf.Files) != 1 {
-		t.Errorf("conf.Files = %s, len(conf.Files) = %d not expected 1.",
-			conf.Files, len(conf.Files))
-	} else if conf.Files["foo"] != "bar" {
-		t.Errorf("conf.Files = %s, did not find foo:bar.",
-			conf.Files)
 	}
 }

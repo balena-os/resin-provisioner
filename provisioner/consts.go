@@ -8,12 +8,6 @@ const (
 )
 
 var DefaultConfig = Config{
-	// Default to standard ethernet connection.
-
-	Files: map[string]string{
-		"network/settings":       "[global]\nOfflineMode=false\n\n[WiFi]\nEnable=true\nTethering=false\n\n[Wired]\nEnable=true\nTethering=false\n\n[Bluetooth]\nEnable=true\nTethering=false",
-		"network/network.config": "[service_home_ethernet]\nType = ethernet\nNameservers = 8.8.8.8,8.8.4.4",
-	},
 	AppUpdatePollInterval: "60000",
 	ListenPort:            "48484",
 	VpnPort:               "443",

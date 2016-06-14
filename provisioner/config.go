@@ -3,25 +3,24 @@ package provisioner
 import "io/ioutil"
 
 type Config struct {
-	ApplicationId         string            `json:"applicationId"`
-	ApiKey                string            `json:"apiKey"`
-	UserId                string            `json:"userId"`
-	Username              string            `json:"username"`
-	DeviceType            string            `json:"deviceType"`
-	Uuid                  string            `json:"uuid,omitempty"`
-	RegisteredAt          float64           `json:"registered_at,omitempty"`
-	DeviceId              float64           `json:"deviceId,omitempty"`
-	Files                 map[string]string `json:"files"`
-	AppUpdatePollInterval string            `json:"appUpdatePollInterval"`
-	ListenPort            string            `json:"listenPort"`
-	VpnPort               string            `json:"vpnPort"`
-	ApiEndpoint           string            `json:"apiEndpoint"`
-	VpnEndpoint           string            `json:"vpnEndpoint"`
-	RegistryEndpoint      string            `json:"registryEndpoint"`
-	DeltaEndpoint         string            `json:"deltaEndpoint"`
-	PubnubSubscribeKey    string            `json:"pubnubSubscribeKey"`
-	PubnubPublishKey      string            `json:"pubnubPublishKey"`
-	MixpanelToken         string            `json:"mixpanelToken"`
+	ApplicationId         string  `json:"applicationId"`
+	ApiKey                string  `json:"apiKey"`
+	UserId                string  `json:"userId"`
+	Username              string  `json:"username"`
+	DeviceType            string  `json:"deviceType"`
+	Uuid                  string  `json:"uuid,omitempty"`
+	RegisteredAt          float64 `json:"registered_at,omitempty"`
+	DeviceId              float64 `json:"deviceId,omitempty"`
+	AppUpdatePollInterval string  `json:"appUpdatePollInterval"`
+	ListenPort            string  `json:"listenPort"`
+	VpnPort               string  `json:"vpnPort"`
+	ApiEndpoint           string  `json:"apiEndpoint"`
+	VpnEndpoint           string  `json:"vpnEndpoint"`
+	RegistryEndpoint      string  `json:"registryEndpoint"`
+	DeltaEndpoint         string  `json:"deltaEndpoint"`
+	PubnubSubscribeKey    string  `json:"pubnubSubscribeKey"`
+	PubnubPublishKey      string  `json:"pubnubPublishKey"`
+	MixpanelToken         string  `json:"mixpanelToken"`
 
 	// See json.go/parseConfig() for more details on what this is for.
 	InitialRaw map[string]interface{} `json:"-"`

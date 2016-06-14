@@ -41,10 +41,6 @@ func parseConfig(str string) (*Config, error) {
 	ret := new(Config)
 	*ret = DefaultConfig
 
-	// Unmarshal will _append_ to a map, so clear then fill with defaults if
-	// not filled.
-	ret.Files = make(map[string]string)
-
 	// We parse it twice, firstly we populate the struct fileds in the usual
 	// way:
 	if err := json.Unmarshal(bytes, ret); err != nil {
@@ -67,14 +63,6 @@ func parseConfig(str string) (*Config, error) {
 	// overwrite exported fields in the generated output, more work would
 	// need to be done to deal with that which isn't hugely worth it for the
 	// provisioner.
-
-	// Next, fix up Files field - if no files are specified we need to
-	// populate otherwise leave alone.
-	if len(ret.Files) == 0 {
-		for key, val := range DefaultConfig.Files {
-			ret.Files[key] = val
-		}
-	}
 
 	return ret, nil
 }
