@@ -73,8 +73,20 @@ func (c *dbusConnection) EnableStartUnit(path string) error {
 	return nil
 }
 
+func (c *dbusConnection) RestartUnitNoWait(path string) error {
+	name := pathLib.Base(path)
+	_, err := c.RestartUnit(name, "replace", nil)
+
+	return err
+}
+
 func (c *dbusConnection) SupervisorEnableStart() error {
-	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
+	// We need to restart the prepare-openvpn.service to avoid a bug whereby
+	// config.json is read before endpoints are populated, resulting in
+	// misconfigured openvpn.
+	if err := c.RestartUnitNoWait(PREPARE_OPENVPN_PATH); err != nil {
+		return err
+	} else if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
 		return err
 	}
 

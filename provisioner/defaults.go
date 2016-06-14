@@ -3,6 +3,7 @@ package provisioner
 const (
 	SUPERVISOR_PATH         = "/lib/systemd/system/resin-supervisor.service"
 	UPDATE_RESIN_TIMER_PATH = "/lib/systemd/system/update-resin-supervisor.timer"
+	PREPARE_OPENVPN_PATH    = "/lib/systemd/system/prepare-openvpn.service"
 
 	DEFAULT_RESIN_DOMAIN = "resinstaging.io"
 )
