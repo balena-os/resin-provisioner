@@ -74,3 +74,26 @@ func (c *Config) DetectDeviceType() error {
 
 	return nil
 }
+
+// Read environment-field specified values.
+func (c *Config) ReadEnv() {
+	if c.PubnubSubscribeKey == "" {
+		c.PubnubSubscribeKey = os.Getenv(PUBNUB_SUBSCRIBE_KEY_ENV_VAR)
+	}
+
+	if c.PubnubPublishKey == "" {
+		c.PubnubPublishKey = os.Getenv(PUBNUB_PUBLISH_KEY_ENV_VAR)
+	}
+
+	if c.MixpanelToken == "" {
+		c.MixpanelToken = os.Getenv(MIXPANEL_TOKEN_ENV_VAR)
+	}
+
+	// TODO: Deduplicate from defaults.go.
+	if domainOverride := os.Getenv(DOMAIN_OVERRIDE_ENV_VAR); domainOverride != "" {
+		c.ApiEndpoint = fmt.Sprintf("https://api.%s", domainOverride)
+		c.VpnEndpoint = fmt.Sprintf("vpn.%s", domainOverride)
+		c.RegistryEndpoint = fmt.Sprintf("registry.%s", domainOverride)
+		c.DeltaEndpoint = fmt.Sprintf("https://delta.%s", domainOverride)
+	}
+}

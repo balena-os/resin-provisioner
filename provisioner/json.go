@@ -65,9 +65,12 @@ func parseConfig(str string) (*Config, error) {
 	// provisioner.
 
 	// If DeviceType not specified, attempt to detect it.
-	if ret.DeviceType == "" {
-		return ret, ret.DetectDeviceType()
+	if err := ret.DetectDeviceType(); err != nil {
+		return nil, err
 	}
+
+	// Populate any environment-specified fields.
+	ret.ReadEnv()
 
 	return ret, nil
 }
