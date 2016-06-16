@@ -1,6 +1,11 @@
 package provisioner
 
-import "io/ioutil"
+import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+)
 
 type Config struct {
 	ApplicationId         string  `json:"applicationId"`
@@ -24,7 +29,11 @@ type Config struct {
 }
 
 func (a *Api) readConfig() (*Config, error) {
-	if bytes, err := ioutil.ReadFile(a.ConfigPath); err != nil {
+	if bytes, err := ioutil.ReadFile(a.ConfigPath); os.IsNotExist(err) {
+		// We'll create a new config.json.
+		log.Printf("Empty %s, will create new on write.\n", a.ConfigPath)
+		return parseConfig("{}")
+	} else if err != nil {
 		return nil, err
 	} else {
 		return parseConfig(string(bytes))
