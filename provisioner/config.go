@@ -50,3 +50,13 @@ func (c *Config) ProvisionedState() ProvisionedState {
 
 	return Provisioned
 }
+
+func (c *Config) DetectDeviceType() error {
+	if deviceType, err := ScanDeviceType(); err != nil {
+		return err
+	} else {
+		c.DeviceType = deviceType.String()
+	}
+
+	return nil
+}

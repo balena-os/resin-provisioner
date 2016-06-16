@@ -64,5 +64,10 @@ func parseConfig(str string) (*Config, error) {
 	// need to be done to deal with that which isn't hugely worth it for the
 	// provisioner.
 
+	// If DeviceType not specified, attempt to detect it.
+	if ret.DeviceType == "" {
+		return ret, ret.DetectDeviceType()
+	}
+
 	return ret, nil
 }
