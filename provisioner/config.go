@@ -60,7 +60,12 @@ func (c *Config) ProvisionedState() ProvisionedState {
 	return Provisioned
 }
 
+// If DeviceType not specified, attempt to determine it and assign.
 func (c *Config) DetectDeviceType() error {
+	if c.DeviceType != "" {
+		return nil
+	}
+
 	if deviceType, err := ScanDeviceType(); err != nil {
 		return err
 	} else {
