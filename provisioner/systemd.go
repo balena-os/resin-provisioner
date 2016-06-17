@@ -117,10 +117,10 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 	if err := c.EnableStartUnit(UPDATE_RESIN_PATH); err != nil {
 		return err
 	}
-	// We need to restart the prepare-openvpn.service to avoid a bug whereby
-	// config.json is read before endpoints are populated, resulting in
-	// misconfigured openvpn.
-	if err := c.RestartUnitNoWait(PREPARE_OPENVPN_PATH); err != nil {
+	// We need to restart the prepare-openvpn.service ('wanted' by
+	// openvpn-resin.service) to avoid a bug whereby config.json is read
+	// before endpoints are populated, resulting in misconfigured openvpn.
+	if err := c.RestartUnitNoWait(OPENVPN_PATH); err != nil {
 		return err
 	}
 	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
