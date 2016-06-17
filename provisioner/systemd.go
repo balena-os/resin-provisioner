@@ -90,6 +90,13 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 		return err
 	}
 
+	// We first need to ensure that the update-resin-supervisor.service is
+	// able to perform the first supervisor image pull by setting the tag in
+	// /etc/supervisor.conf.
+	if err := setSupervisorTag(); err != nil {
+		return err
+	}
+
 	// Start the resin update timer too.
 	return c.EnableStartUnit(UPDATE_RESIN_TIMER_PATH)
 }

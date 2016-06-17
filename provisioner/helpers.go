@@ -131,3 +131,26 @@ func getEnvFileFields(path string) (map[string]string, error) {
 
 	return ret, nil
 }
+
+func setEnvFileFields(path string, fields map[string]string) error {
+	lines := make([]string, 0, len(fields))
+
+	for key, val := range fields {
+		lines = append(lines, fmt.Sprintf("%s=%s", key, val))
+	}
+
+	// Add trailing newline too.
+	str := strings.Join(lines, "\n") + "\n"
+
+	return atomicWrite(path, str)
+}
+
+func setSupervisorTag() error {
+	if fields, err := getEnvFileFields(SUPERVISOR_CONF_PATH); err != nil {
+		return err
+	} else {
+		fields["SUPERVISOR_TAG"] = INIT_UPDATER_SUPERVISOR_TAG
+
+		return setEnvFileFields(SUPERVISOR_CONF_PATH, fields)
+	}
+}

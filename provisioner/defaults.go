@@ -5,8 +5,10 @@ const (
 	UPDATE_RESIN_TIMER_PATH = "/lib/systemd/system/update-resin-supervisor.timer"
 	PREPARE_OPENVPN_PATH    = "/lib/systemd/system/prepare-openvpn.service"
 	OSRELEASE_PATH          = "/etc/os-release"
+	SUPERVISOR_CONF_PATH    = "/etc/supervisor.conf"
 
-	DEFAULT_RESIN_DOMAIN = "resinstaging.io"
+	DEFAULT_RESIN_DOMAIN        = "resinstaging.io"
+	INIT_UPDATER_SUPERVISOR_TAG = "production"
 
 	PUBNUB_SUBSCRIBE_KEY_ENV_VAR = "RESIN_PUBNUB_SUBSCRIBE_KEY"
 	PUBNUB_PUBLISH_KEY_ENV_VAR   = "RESIN_PUBNUB_PUBLISH_KEY"
