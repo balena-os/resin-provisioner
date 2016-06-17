@@ -115,7 +115,7 @@ func readLines(path string) ([]string, error) {
 		return nil, fmt.Errorf("Can't read %s: %s", path, err)
 	}
 
-	str := string(bytes)
+	str := strings.TrimSpace(string(bytes))
 	rawLines := strings.Split(str, "\n")
 
 	ret := make([]string, len(rawLines))
