@@ -10,7 +10,7 @@ const (
 	SUPERVISOR_CONF_PATH    = "/etc/supervisor.conf"
 	RESIN_SERVICES_PATH     = "/etc/resin-connectable.conf"
 
-	DEFAULT_RESIN_DOMAIN        = "resinstaging.io"
+	DEFAULT_RESIN_DOMAIN        = "resin.io"
 	INIT_UPDATER_SUPERVISOR_TAG = "production"
 
 	PUBNUB_SUBSCRIBE_KEY_ENV_VAR = "RESIN_PUBNUB_SUBSCRIBE_KEY"
