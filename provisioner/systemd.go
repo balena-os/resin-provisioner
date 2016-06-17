@@ -86,7 +86,25 @@ func (c *dbusConnection) RestartUnitNoWait(path string) error {
 	return err
 }
 
+func (c *dbusConnection) EnableResinServices() error {
+	if services, err := readLines(RESIN_SERVICES_PATH); err != nil {
+		return err
+	} else {
+		paths := make([]string, len(services))
+
+		for i, service := range services {
+			paths[i] = fmt.Sprintf("%s%s", SERVICES_ROOT_PATH, service)
+		}
+
+		return c.EnableUnitsAsync(paths)
+	}
+}
+
 func (c *dbusConnection) SupervisorEnableStart() error {
+	// Start by enabling all required services.
+	if err := c.EnableResinServices(); err != nil {
+		return err
+	}
 	// We need to restart the prepare-openvpn.service to avoid a bug whereby
 	// config.json is read before endpoints are populated, resulting in
 	// misconfigured openvpn.
