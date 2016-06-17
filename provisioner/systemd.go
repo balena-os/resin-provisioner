@@ -92,7 +92,8 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 	// misconfigured openvpn.
 	if err := c.RestartUnitNoWait(PREPARE_OPENVPN_PATH); err != nil {
 		return err
-	} else if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
+	}
+	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
 		return err
 	}
 
