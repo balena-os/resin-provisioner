@@ -1,9 +1,6 @@
 package provisioner
 
-import (
-	"fmt"
-	"log"
-)
+import "fmt"
 
 func getOsReleaseSlug() (string, error) {
 	if fields, err := getEnvFileFields(OSRELEASE_PATH); err != nil {
@@ -20,14 +17,5 @@ func getOsReleaseSlug() (string, error) {
 }
 
 func ScanDeviceTypeSlug() (string, error) {
-	// We first attempt to retrieve the slug from /etc/os-release.
-	if slug, err := getOsReleaseSlug(); err == nil {
-		return slug, nil
-	} else {
-		log.Printf("WARNING: Could not retrieve os-release slug, "+
-			"reverting to heuristics: %s\n", err)
-
-		deviceType, err := identify()
-		return deviceType.String(), err
-	}
+	return getOsReleaseSlug()
 }
