@@ -10,6 +10,7 @@ import (
 	pathLib "path"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 var apiKeyRegexp = regexp.MustCompile("[a-zA-Z0-9]+")
@@ -102,4 +103,31 @@ func supervisorDbusRunning() (bool, error) {
 
 		return dbus.SupervisorRunning()
 	}
+}
+
+func getEnvFileFields(path string) (map[string]string, error) {
+	var (
+		bytes []byte
+		err   error
+	)
+
+	if bytes, err = ioutil.ReadFile(path); err != nil {
+		return nil, fmt.Errorf("Can't read %s: %s", OSRELEASE_PATH, err)
+	}
+
+	str := string(bytes)
+
+	ret := make(map[string]string)
+	for _, line := range strings.Split(str, "\n") {
+		fields := strings.Split(line, "=")
+		if len(fields) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(fields[0])
+		val := strings.TrimSpace(fields[1])
+
+		ret[key] = val
+	}
+
+	return ret, nil
 }

@@ -4,6 +4,7 @@ const (
 	SUPERVISOR_PATH         = "/lib/systemd/system/resin-supervisor.service"
 	UPDATE_RESIN_TIMER_PATH = "/lib/systemd/system/update-resin-supervisor.timer"
 	PREPARE_OPENVPN_PATH    = "/lib/systemd/system/prepare-openvpn.service"
+	OSRELEASE_PATH          = "/etc/os-release"
 
 	DEFAULT_RESIN_DOMAIN = "resinstaging.io"
 

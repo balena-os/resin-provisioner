@@ -66,10 +66,10 @@ func (c *Config) DetectDeviceType() error {
 		return nil
 	}
 
-	if deviceType, err := ScanDeviceType(); err != nil {
+	if deviceType, err := ScanDeviceTypeSlug(); err != nil {
 		return err
 	} else {
-		c.DeviceType = deviceType.String()
+		c.DeviceType = deviceType
 	}
 
 	return nil
