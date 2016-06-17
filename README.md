@@ -34,9 +34,9 @@ It uses the following environment variables:
 
 * `RESIN_PUBNUB_SUBSCRIBE_KEY` - Sets pubnub subscribe key if not specified
   already in config.json.
-* RESIN_PUBNUB_PUBLISH_KEY - Sets pubnub publish key if not specified
-  already in config.json.
-* RESIN_MIXPANEL_TOKEN - Sets mixpanel token if not specified already in
+* `RESIN_PUBNUB_PUBLISH_KEY` - Sets pubnub publish key if not specified already
+  in config.json.
+* `RESIN_MIXPANEL_TOKEN` - Sets mixpanel token if not specified already in
   config.json.
-* RESIN_DOMAIN_OVERRIDE - Overrides the default domain (`resin.io`) and sets it
-  to this value.
+* `RESIN_DOMAIN_OVERRIDE` - Overrides the default domain (`resin.io`) and sets
+  it to this value.
