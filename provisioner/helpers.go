@@ -116,7 +116,14 @@ func readLines(path string) ([]string, error) {
 	}
 
 	str := string(bytes)
-	return strings.Split(str, "\n"), nil
+	rawLines := strings.Split(str, "\n")
+
+	ret := make([]string, len(rawLines))
+	for i, line := range rawLines {
+		ret[i] = strings.TrimSpace(line)
+	}
+
+	return ret, nil
 }
 
 func getEnvFileFields(path string) (map[string]string, error) {
