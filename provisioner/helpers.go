@@ -105,20 +105,32 @@ func supervisorDbusRunning() (bool, error) {
 	}
 }
 
-func getEnvFileFields(path string) (map[string]string, error) {
+func readLines(path string) ([]string, error) {
 	var (
 		bytes []byte
 		err   error
 	)
 
 	if bytes, err = ioutil.ReadFile(path); err != nil {
-		return nil, fmt.Errorf("Can't read %s: %s", OSRELEASE_PATH, err)
+		return nil, fmt.Errorf("Can't read %s: %s", path, err)
 	}
 
 	str := string(bytes)
+	return strings.Split(str, "\n"), nil
+}
+
+func getEnvFileFields(path string) (map[string]string, error) {
+	var (
+		lines []string
+		err   error
+	)
+
+	if lines, err = readLines(path); err != nil {
+		return nil, err
+	}
 
 	ret := make(map[string]string)
-	for _, line := range strings.Split(str, "\n") {
+	for _, line := range lines {
 		fields := strings.Split(line, "=")
 		if len(fields) != 2 {
 			continue
