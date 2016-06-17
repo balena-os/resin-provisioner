@@ -123,9 +123,6 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 	if err := c.RestartUnitNoWait(OPENVPN_PATH); err != nil {
 		return err
 	}
-	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
-		return err
-	}
 
 	// Start the resin update timer too.
 	return c.EnableStartUnit(UPDATE_RESIN_TIMER_PATH)
