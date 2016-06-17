@@ -2,9 +2,10 @@ package provisioner
 
 const (
 	SERVICES_ROOT_PATH      = "/lib/systemd/system/"
-	SUPERVISOR_PATH         = SERVICES_ROOT_PATH+"resin-supervisor.service"
-	UPDATE_RESIN_TIMER_PATH = SERVICES_ROOT_PATH+"update-resin-supervisor.timer"
-	PREPARE_OPENVPN_PATH    = SERVICES_ROOT_PATH+"prepare-openvpn.service"
+	SUPERVISOR_PATH         = SERVICES_ROOT_PATH + "resin-supervisor.service"
+	UPDATE_RESIN_TIMER_PATH = SERVICES_ROOT_PATH + "update-resin-supervisor.timer"
+	UPDATE_RESIN_PATH       = SERVICES_ROOT_PATH + "update-resin-supervisor.service"
+	PREPARE_OPENVPN_PATH    = SERVICES_ROOT_PATH + "prepare-openvpn.service"
 	OSRELEASE_PATH          = "/etc/os-release"
 	SUPERVISOR_CONF_PATH    = "/etc/supervisor.conf"
 
