@@ -55,11 +55,17 @@ func (c *dbusConnection) SupervisorRunning() (ret bool, err error) {
 	}
 }
 
+func (c *dbusConnection) EnableUnitsAsync(paths []string) error {
+	_, _, err := c.EnableUnitFiles(paths, false, false)
+
+	return err
+}
+
 func (c *dbusConnection) EnableStartUnit(path string) error {
 	name := pathLib.Base(path)
 	ch := make(chan string)
 
-	if _, _, err := c.EnableUnitFiles([]string{path}, false, false); err != nil {
+	if err := c.EnableUnitsAsync([]string{path}); err != nil {
 		return err
 	} else if _, err := c.StartUnit(name, "replace", ch); err != nil {
 		return err
