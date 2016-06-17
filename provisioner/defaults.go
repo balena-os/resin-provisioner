@@ -8,6 +8,7 @@ const (
 	PREPARE_OPENVPN_PATH    = SERVICES_ROOT_PATH + "prepare-openvpn.service"
 	OSRELEASE_PATH          = "/etc/os-release"
 	SUPERVISOR_CONF_PATH    = "/etc/supervisor.conf"
+	RESIN_SERVICES_PATH     = "/etc/resin-connectable.conf"
 
 	DEFAULT_RESIN_DOMAIN        = "resinstaging.io"
 	INIT_UPDATER_SUPERVISOR_TAG = "production"
