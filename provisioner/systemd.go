@@ -105,6 +105,18 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 	if err := c.EnableResinServices(); err != nil {
 		return err
 	}
+
+	// We need to ensure that the update-resin-supervisor.service is able to
+	// perform the first supervisor image pull by setting the tag in
+	// /etc/supervisor.conf.
+	if err := setSupervisorTag(); err != nil {
+		return err
+	}
+	// Next, trigger the first update-resin-supervisor to make sure the
+	// supervisor image is downloaded.
+	if err := c.EnableStartUnit(UPDATE_RESIN_PATH); err != nil {
+		return err
+	}
 	// We need to restart the prepare-openvpn.service to avoid a bug whereby
 	// config.json is read before endpoints are populated, resulting in
 	// misconfigured openvpn.
@@ -112,13 +124,6 @@ func (c *dbusConnection) SupervisorEnableStart() error {
 		return err
 	}
 	if err := c.EnableStartUnit(SUPERVISOR_PATH); err != nil {
-		return err
-	}
-
-	// We first need to ensure that the update-resin-supervisor.service is
-	// able to perform the first supervisor image pull by setting the tag in
-	// /etc/supervisor.conf.
-	if err := setSupervisorTag(); err != nil {
 		return err
 	}
 
