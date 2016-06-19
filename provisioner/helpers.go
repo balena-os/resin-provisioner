@@ -1,6 +1,8 @@
 package provisioner
 
 import (
+	"bytes"
+	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -175,15 +177,40 @@ func setSupervisorTag() error {
 }
 
 // Simple http GET request helper
-func getUrl(url string) ([]byte, error) {
+func getUrl(url string) ([]byte, int, error) {
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return body, nil
+	return body, resp.StatusCode, nil
+}
+
+// Simple http POST helper
+func postUrl(url string, bodyType string, body []byte) ([]byte, int, error) {
+	resp, err := http.Post(url, bodyType, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, err
+	}
+	return b, resp.StatusCode, nil
+}
+
+func isHttpSuccess(status int) bool {
+	return status/100 == 2
+}
+func randomHexString(byteLength uint32) (str string, err error) {
+	slice := make([]byte, byteLength)
+	if _, err = rand.Read(slice); err == nil {
+		str = fmt.Sprintf("%x", slice)
+	}
+	return
 }

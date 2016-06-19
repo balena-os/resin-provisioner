@@ -1,9 +1,13 @@
 package provisioner
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type ProvisionedState int
@@ -96,6 +100,11 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		if err := conf.GetKeysFromApi(); err != nil {
 			return err
 		}
+
+		if err := a.RegisterDevice(conf); err != nil {
+			return err
+		}
+
 		if err := a.writeConfig(conf); err != nil {
 			return err
 		}
@@ -108,6 +117,58 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 
 			return conn.SupervisorEnableStart()
 		}
+	}
+}
+
+func (a Api) RegisterDevice(c *Config) error {
+	newUuid := false
+	registeredAt := time.Now().Unix()
+	if c.Uuid == "" {
+		newUuid = true
+		if uuid, err := randomHexString(UUID_BYTE_LENGTH); err != nil {
+			return err
+		} else {
+			c.Uuid = uuid
+		}
+	}
+
+	device := make(map[string]interface{})
+	device["user"] = c.UserId
+	device["application"] = c.ApplicationId
+	device["uuid"] = c.Uuid
+	device["device_type"] = c.DeviceType
+	device["registered_at"] = registeredAt
+
+	body, err := json.Marshal(device)
+	if err != nil {
+		return err
+	}
+	url := c.ApiEndpoint + "/v1/device?apikey=" + c.ApiKey
+	resp, status, err := postUrl(url, "application/json", body)
+	if err != nil {
+		return err
+	} else if !isHttpSuccess(status) {
+		// If device already exists and we're not generating the uuid
+		if strings.Contains(string(resp), `"uuid" must be unique`) && !newUuid {
+			url = c.ApiEndpoint + `/v1/device?$filter=uuid eq '` + c.Uuid + `'&apikey=` + c.ApiKey
+			if resp, status, err = getUrl(url); err != nil {
+				return err
+			} else if !isHttpSuccess(status) {
+				return fmt.Errorf("Error getting device from API: %d %s", status, resp)
+			}
+		} else {
+			return fmt.Errorf("Error when registering: %d %s", status, resp)
+		}
+	}
+	if err = json.Unmarshal(resp, &device); err != nil {
+		return err
+	}
+	if deviceId, ok := device["id"].(float64); !ok {
+		return errors.New("Device returned from API is invalid")
+	} else {
+		c.RegisteredAt = int64(registeredAt)
+		c.DeviceId = int64(deviceId)
+		return nil
 	}
 }
 

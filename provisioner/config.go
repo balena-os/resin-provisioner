@@ -10,21 +10,23 @@ import (
 )
 
 type Config struct {
-	ApplicationId         string  `json:"applicationId"`
-	ApiKey                string  `json:"apiKey"`
-	UserId                string  `json:"userId"`
-	DeviceType            string  `json:"deviceType"`
-	RegisteredAt          float64 `json:"registered_at,omitempty"`
-	AppUpdatePollInterval string  `json:"appUpdatePollInterval"`
-	ListenPort            string  `json:"listenPort"`
-	VpnPort               string  `json:"vpnPort"`
-	ApiEndpoint           string  `json:"apiEndpoint"`
-	VpnEndpoint           string  `json:"vpnEndpoint"`
-	RegistryEndpoint      string  `json:"registryEndpoint"`
-	DeltaEndpoint         string  `json:"deltaEndpoint"`
-	PubnubSubscribeKey    string  `json:"pubnubSubscribeKey"`
-	PubnubPublishKey      string  `json:"pubnubPublishKey"`
-	MixpanelToken         string  `json:"mixpanelToken"`
+	Uuid                  string `json:"uuid"`
+	ApplicationId         string `json:"applicationId"`
+	ApiKey                string `json:"apiKey"`
+	UserId                string `json:"userId"`
+	DeviceId              int64  `json:"deviceId",omitempty`
+	DeviceType            string `json:"deviceType"`
+	RegisteredAt          int64  `json:"registered_at,omitempty"`
+	AppUpdatePollInterval string `json:"appUpdatePollInterval"`
+	ListenPort            string `json:"listenPort"`
+	VpnPort               string `json:"vpnPort"`
+	ApiEndpoint           string `json:"apiEndpoint"`
+	VpnEndpoint           string `json:"vpnEndpoint"`
+	RegistryEndpoint      string `json:"registryEndpoint"`
+	DeltaEndpoint         string `json:"deltaEndpoint"`
+	PubnubSubscribeKey    string `json:"pubnubSubscribeKey"`
+	PubnubPublishKey      string `json:"pubnubPublishKey"`
+	MixpanelToken         string `json:"mixpanelToken"`
 
 	// See json.go/parseConfig() for more details on what this is for.
 	InitialRaw map[string]interface{} `json:"-"`
@@ -81,8 +83,10 @@ func (c *Config) DetectDeviceType() error {
 func (c Config) getConfigFromApi() (map[string]interface{}, error) {
 	var conf map[string]interface{}
 	conf = make(map[string]interface{})
-	if r, err := getUrl(c.ApiEndpoint + "/config"); err != nil {
+	if r, status, err := getUrl(c.ApiEndpoint + "/config"); err != nil {
 		return nil, err
+	} else if !isHttpSuccess(status) {
+		return nil, fmt.Errorf("Error status from Resin API: %d", status)
 	} else if err = json.Unmarshal(r, &conf); err != nil {
 		return nil, err
 	} else {
