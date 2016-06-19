@@ -121,7 +121,13 @@ func authenticate() (token string, err error) {
 }
 
 func createApp(token string) (string, error) {
-	return "", nil
+	for {
+		if name, e := prompt(nil, "application name: "); e != nil {
+			return "", e
+		} else if name != "" {
+			return api.CreateApp(name, token)
+		}
+	}
 }
 
 func getOrCreateApp(token string) (string, error) {

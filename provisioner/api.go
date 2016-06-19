@@ -209,3 +209,7 @@ func (a *Api) Signup(email, password string) (token string, err error) {
 func (a *Api) GetApps(token string) (apps []map[string]interface{}, err error) {
 	return
 }
+
+func (a *Api) CreateApp(name, token string) (id string, err error) {
+	return
+}
