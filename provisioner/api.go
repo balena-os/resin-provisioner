@@ -90,11 +90,12 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		}
 
 		// Ok, now we go for it.
-
 		conf.UserId = opts.UserId
 		conf.ApplicationId = opts.ApplicationId
 		conf.ApiKey = opts.ApiKey
-
+		if err := conf.GetKeysFromApi(); err != nil {
+			return err
+		}
 		if err := a.writeConfig(conf); err != nil {
 			return err
 		}

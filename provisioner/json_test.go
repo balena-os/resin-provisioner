@@ -1,6 +1,9 @@
 package provisioner
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 var minimalJson = `
 {
@@ -42,4 +45,18 @@ func TestParseMinimalConfigJson(t *testing.T) {
 			t.Error("MISMATCH: DeltaEndpoint")
 		}
 	}
+}
+
+func TestGetConfigFromApi(t *testing.T) {
+	var c Config
+	c.ApiEndpoint = "https://api.resin.io"
+	if err := c.GetKeysFromApi(); err != nil {
+		t.Errorf("Error getting from API: %s", err)
+	} else {
+		log.Printf("%v %v %v", c.MixpanelToken, c.PubnubSubscribeKey, c.PubnubPublishKey)
+		if c.MixpanelToken == "" || c.PubnubSubscribeKey == "" || c.PubnubSubscribeKey == "" {
+			t.Error("Empty values after getting from API")
+		}
+	}
+
 }

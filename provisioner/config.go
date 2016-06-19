@@ -1,6 +1,8 @@
 package provisioner
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -75,20 +77,47 @@ func (c *Config) DetectDeviceType() error {
 	return nil
 }
 
+// Get /config from the Resin API specified at c.ApiEndpoint
+func (c Config) getConfigFromApi() (map[string]interface{}, error) {
+	var conf map[string]interface{}
+	conf = make(map[string]interface{})
+	if r, err := getUrl(c.ApiEndpoint + "/config"); err != nil {
+		return nil, err
+	} else if err = json.Unmarshal(r, &conf); err != nil {
+		return nil, err
+	} else {
+		return conf, nil
+	}
+}
+
+// Get and populate mixpanel and pubnub keys from the Resin API
+func (c *Config) GetKeysFromApi() error {
+	// GET /config from api
+	if conf, err := c.getConfigFromApi(); err != nil {
+		return fmt.Errorf("Error getting config from Resin API: %s", err)
+	} else {
+		i := errors.New("Invalid config received from the Resin API")
+		if t, ok := conf["mixpanelToken"].(string); !ok {
+			return i
+		} else if p, ok := conf["pubnub"].(map[string]interface{}); !ok {
+			return i
+		} else if pk, ok := p["publish_key"].(string); !ok {
+			return i
+		} else if sk, ok := p["subscribe_key"].(string); !ok {
+			return i
+		} else if t == "" || pk == "" || sk == "" {
+			return i
+		} else {
+			c.MixpanelToken = t
+			c.PubnubPublishKey = pk
+			c.PubnubSubscribeKey = sk
+			return nil
+		}
+	}
+}
+
 // Read environment-field specified values.
 func (c *Config) ReadEnv() {
-	if c.PubnubSubscribeKey == "" {
-		c.PubnubSubscribeKey = os.Getenv(PUBNUB_SUBSCRIBE_KEY_ENV_VAR)
-	}
-
-	if c.PubnubPublishKey == "" {
-		c.PubnubPublishKey = os.Getenv(PUBNUB_PUBLISH_KEY_ENV_VAR)
-	}
-
-	if c.MixpanelToken == "" {
-		c.MixpanelToken = os.Getenv(MIXPANEL_TOKEN_ENV_VAR)
-	}
-
 	// TODO: Deduplicate from defaults.go.
 	if domainOverride := os.Getenv(DOMAIN_OVERRIDE_ENV_VAR); domainOverride != "" {
 		c.ApiEndpoint = fmt.Sprintf("https://api.%s", domainOverride)
