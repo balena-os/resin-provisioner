@@ -1,6 +1,6 @@
 package provisioner
 
-import "fmt"
+import "log"
 
 func getOsReleaseSlug() (string, error) {
 	if fields, err := getEnvFileFields(OSRELEASE_PATH); err != nil {
@@ -8,8 +8,9 @@ func getOsReleaseSlug() (string, error) {
 	} else {
 		slug := fields["SLUG"]
 		if slug == "" {
-			return "", fmt.Errorf("Could not find 'SLUG' field in %s",
+			log.Printf("Could not find 'SLUG' field in %s, defaulting to raspberry-pi\n",
 				OSRELEASE_PATH)
+			slug = "raspberry-pi"
 		}
 
 		return slug, nil

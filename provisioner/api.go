@@ -195,3 +195,13 @@ func (a *Api) ConfigJson() (string, error) {
 		return str, nil
 	}
 }
+
+func (a *Api) Login(email, password string) (token string, err error) {
+	fmt.Printf("Trying to log in with email: %s and password: %s\n", email, password)
+	return "", errors.New("Not implemented")
+}
+
+func (a *Api) Signup(email, password string) (token string, err error) {
+	fmt.Printf("Trying to sign up with email: %s and password: %s\n", email, password)
+	return "", errors.New("Not implemented")
+}
