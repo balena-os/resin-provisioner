@@ -205,3 +205,7 @@ func (a *Api) Signup(email, password string) (token string, err error) {
 	fmt.Printf("Trying to sign up with email: %s and password: %s\n", email, password)
 	return "", errors.New("Not implemented")
 }
+
+func (a *Api) GetApps(token string) (apps []map[string]interface{}, err error) {
+	return
+}

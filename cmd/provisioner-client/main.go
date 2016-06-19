@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/howeyc/gopass"
@@ -118,7 +120,49 @@ func authenticate() (token string, err error) {
 	return "", nil
 }
 
+func createApp(token string) (string, error) {
+	return "", nil
+}
+
 func getOrCreateApp(token string) (string, error) {
+	apps, err := api.GetApps(token)
+	if err != nil {
+		return "", err
+	}
+	appIds := make([]string, len(apps))
+	appList := ""
+	options := make([]string, len(apps)+1)
+	options[0] = "1"
+	for i, app := range apps {
+		appId, ok := app["id"].(string)
+		if !ok {
+			return "", errors.New("Invalid app list from API")
+		}
+		appIds[i] = appId
+		options[i+1] = strconv.Itoa(i + 1)
+		appName, ok := app["name"].(string)
+		if !ok {
+			return "", errors.New("Invalid app list from API")
+		}
+		appList += fmt.Sprintf("\t%d) %s\n", i+1, appName)
+	}
+	fmt.Printf(`Choose an app for this device, or create one:
+	1) Create new app
+`)
+	fmt.Printf(appList)
+	if input, e := prompt(options, "> "); err != nil {
+		return "", e
+	} else {
+		switch input {
+		case "1":
+			return createApp(token)
+		default:
+			i, _ := strconv.Atoi(input)
+			i -= 1
+			return appIds[i], nil
+		}
+	}
+
 	return "", nil
 }
 
