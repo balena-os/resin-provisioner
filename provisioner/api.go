@@ -198,12 +198,12 @@ func (a *Api) ConfigJson() (string, error) {
 
 func (a *Api) Login(email, password string) (token string, err error) {
 	fmt.Printf("Trying to log in with email: %s and password: %s\n", email, password)
-	return "", errors.New("Not implemented")
+	return "t", errors.New("Not implemented")
 }
 
 func (a *Api) Signup(email, password string) (token string, err error) {
 	fmt.Printf("Trying to sign up with email: %s and password: %s\n", email, password)
-	return "", errors.New("Not implemented")
+	return "t", errors.New("Not implemented")
 }
 
 func (a *Api) GetApps(token string) (apps []map[string]interface{}, err error) {
@@ -211,5 +211,9 @@ func (a *Api) GetApps(token string) (apps []map[string]interface{}, err error) {
 }
 
 func (a *Api) CreateApp(name, token string) (id string, err error) {
+	return
+}
+
+func (a *Api) GetApiKey(appId, token string) (apiKey string, err error) {
 	return
 }

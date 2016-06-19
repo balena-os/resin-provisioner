@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -173,11 +175,22 @@ func getOrCreateApp(token string) (string, error) {
 }
 
 func getUserId(token string) (string, error) {
-	return "", nil
+	var jsonToken map[string]interface{}
+	if content := strings.Split(token, "."); len(content) != 3 {
+		return "", errors.New("Invalid token")
+	} else if parsedContent, e := base64.RawURLEncoding.DecodeString(content[1]); e != nil {
+		return "", e
+	} else if e = json.Unmarshal(parsedContent, &jsonToken); e != nil {
+		return "", e
+	} else if id, ok := jsonToken["id"].(float64); !ok {
+		return "", errors.New("Invalid id in token")
+	} else {
+		return strconv.Itoa(int(id)), nil
+	}
 }
 
 func getApiKey(token, appId string) (string, error) {
-	return "", nil
+	return "", errors.New("Not implemented")
 }
 
 func main() {
@@ -204,7 +217,7 @@ help you manage device fleets.
 				return err
 			} else if userId, err := getUserId(token); err != nil {
 				return err
-			} else if apiKey, err := getApiKey(token, appId); err != nil {
+			} else if apiKey, err := api.GetApiKey(appId, token); err != nil {
 				return err
 			} else {
 				opts := &provisioner.ProvisionOpts{
