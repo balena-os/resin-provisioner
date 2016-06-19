@@ -120,6 +120,7 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 	}
 }
 
+// TODO: Use proper pinejs client for all this.
 func (a Api) RegisterDevice(c *Config) error {
 	newUuid := false
 	registeredAt := time.Now().Unix()
@@ -143,27 +144,40 @@ func (a Api) RegisterDevice(c *Config) error {
 	if err != nil {
 		return err
 	}
-	url := c.ApiEndpoint + "/v1/device?apikey=" + c.ApiKey
-	resp, status, err := postUrl(url, "application/json", body)
+	u := c.ApiEndpoint + "/v1/device?apikey=" + c.ApiKey
+	resp, status, err := postUrl(u, "application/json", body)
 	if err != nil {
 		return err
 	} else if !isHttpSuccess(status) {
 		// If device already exists and we're not generating the uuid
-		if strings.Contains(string(resp), `"uuid" must be unique`) && !newUuid {
-			url = c.ApiEndpoint + `/v1/device?$filter=uuid eq '` + c.Uuid + `'&apikey=` + c.ApiKey
-			if resp, status, err = getUrl(url); err != nil {
+		if (strings.Contains(string(resp), `"uuid" must be unique`) || strings.Contains(string(resp), `Data is referenced by uuid`)) && !newUuid {
+			u := c.ApiEndpoint + `/v1/device?` + pineQueryEscape(`$filter=uuid eq '`+c.Uuid+`'&apikey=`+c.ApiKey)
+			if resp, status, err = getUrl(u); err != nil {
 				return err
 			} else if !isHttpSuccess(status) {
 				return fmt.Errorf("Error getting device from API: %d %s", status, resp)
+			} else {
+				d := make(map[string]interface{})
+				if err = json.Unmarshal(resp, &d); err != nil {
+					return err
+				}
+				if arr, ok := d["d"].([]interface{}); !ok {
+					return errors.New("Invalid object returned from API")
+				} else if len(arr) != 1 {
+					return errors.New("Invalid object returned from API")
+				} else if dev, ok := arr[0].(map[string]interface{}); !ok {
+					return errors.New("Invalid object returned from API")
+				} else {
+					device = dev
+				}
 			}
 		} else {
 			return fmt.Errorf("Error when registering: %d %s", status, resp)
 		}
-	}
-	if err = json.Unmarshal(resp, &device); err != nil {
+	} else if err = json.Unmarshal(resp, &device); err != nil {
 		return err
 	}
-	if deviceId, ok := device["id"].(float64); !ok {
+	if deviceId, ok := device["id"].(float64); !ok || deviceId == 0 {
 		return errors.New("Device returned from API is invalid")
 	} else {
 		c.RegisteredAt = int64(registeredAt)

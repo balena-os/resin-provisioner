@@ -207,6 +207,11 @@ func postUrl(url string, bodyType string, body []byte) ([]byte, int, error) {
 func isHttpSuccess(status int) bool {
 	return status/100 == 2
 }
+
+func pineQueryEscape(s string) string {
+	return strings.Replace(s, " ", "%20", -1)
+}
+
 func randomHexString(byteLength uint32) (str string, err error) {
 	slice := make([]byte, byteLength)
 	if _, err = rand.Read(slice); err == nil {
