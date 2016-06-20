@@ -185,7 +185,6 @@ func getOrCreateApp(token string) (string, error) {
 func main() {
 	var configPath string
 	var dryRun bool
-	api = provisioner.New(configPath)
 
 	rootCmd := &cobra.Command{
 		Use:   "resin-provison",
@@ -200,6 +199,7 @@ See https://resin.io for more information about how resin.io can
 help you manage device fleets.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			api = provisioner.New(configPath)
 			api.Domain = domain
 			if token, err := authenticate(); err != nil {
 				return err
