@@ -16,6 +16,15 @@ func AtomicWrite(path, content string) error {
 	// config.json's containing directory.
 	targetDir := pathLib.Dir(path)
 
+	// Some sanity checking.
+	if path == "" {
+		return fmt.Errorf("AtomicWrite: Path not specified.")
+	}
+	if clean := pathLib.Clean(path); clean == targetDir {
+		return fmt.Errorf("Target path %s (%s) is the target directory %s.",
+			path, clean, targetDir)
+	}
+
 	if tmpFile, err := ioutil.TempFile(targetDir, "provisioner"); err != nil {
 		return err
 	} else {
