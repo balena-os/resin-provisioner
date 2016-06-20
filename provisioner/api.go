@@ -14,6 +14,7 @@ type ProvisionedState int
 
 type Api struct {
 	ConfigPath string
+	Domain     string
 	listener   net.Listener
 	server     *http.Server
 }

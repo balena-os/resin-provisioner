@@ -36,7 +36,7 @@ func parseProvisionOpts(str string) (*ProvisionOpts, error) {
 	return ret, json.Unmarshal([]byte(str), ret)
 }
 
-func parseConfig(str string) (*Config, error) {
+func parseConfig(str string, domain string) (*Config, error) {
 	bytes := []byte(str)
 	ret := new(Config)
 	*ret = DefaultConfig
@@ -71,6 +71,7 @@ func parseConfig(str string) (*Config, error) {
 
 	// Populate any environment-specified fields.
 	ret.ReadEnv()
+	ret.SetDomain(domain)
 
 	return ret, nil
 }

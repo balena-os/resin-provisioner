@@ -38,11 +38,11 @@ func (a *Api) readConfig() (*Config, error) {
 	if bytes, err := ioutil.ReadFile(a.ConfigPath); os.IsNotExist(err) {
 		// We'll create a new config.json.
 		log.Printf("Empty %s, will create new on write.\n", a.ConfigPath)
-		return parseConfig("{}")
+		return parseConfig("{}", a.Domain)
 	} else if err != nil {
 		return nil, err
 	} else {
-		return parseConfig(string(bytes))
+		return parseConfig(string(bytes), a.Domain)
 	}
 }
 
@@ -120,5 +120,15 @@ func (c *Config) ReadEnv() {
 		c.VpnEndpoint = fmt.Sprintf("vpn.%s", domainOverride)
 		c.RegistryEndpoint = fmt.Sprintf("registry.%s", domainOverride)
 		c.DeltaEndpoint = fmt.Sprintf("https://delta.%s", domainOverride)
+	}
+}
+
+func (c *Config) SetDomain(domain string) {
+	// TODO: Deduplicate from defaults.go.
+	if domain != "" {
+		c.ApiEndpoint = fmt.Sprintf("https://api.%s", domain)
+		c.VpnEndpoint = fmt.Sprintf("vpn.%s", domain)
+		c.RegistryEndpoint = fmt.Sprintf("registry.%s", domain)
+		c.DeltaEndpoint = fmt.Sprintf("https://delta.%s", domain)
 	}
 }
