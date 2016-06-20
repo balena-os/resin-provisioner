@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+const (
+	OSRELEASE_PATH = "/etc/os-release"
+)
+
 // Try to be atomic - write output to temporary file, sync it, rename it
 // to the target file.
 func AtomicWrite(path, content string) error {
