@@ -2,8 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -95,7 +93,10 @@ func signup() (token string, err error) {
 				password := string(p)
 				confirm := string(c)
 				if password == confirm {
-					return resin.Signup("https;//api."+domain, email, password)
+					token, err = resin.Signup("https;//api."+domain, email, password)
+					if err == nil && token == "" {
+						return "", errors.New("Signup failed")
+					}
 				} else {
 					fmt.Println("Passwords don't match, please try again.")
 				}
@@ -176,21 +177,6 @@ func getOrCreateApp(token string) (string, error) {
 	return "", nil
 }
 
-func getUserId(token string) (string, error) {
-	var jsonToken map[string]interface{}
-	if content := strings.Split(token, "."); len(content) != 3 {
-		return "", errors.New("Invalid token")
-	} else if parsedContent, e := base64.RawURLEncoding.DecodeString(content[1]); e != nil {
-		return "", e
-	} else if e = json.Unmarshal(parsedContent, &jsonToken); e != nil {
-		return "", e
-	} else if id, ok := jsonToken["id"].(float64); !ok {
-		return "", errors.New("Invalid id in token")
-	} else {
-		return strconv.Itoa(int(id)), nil
-	}
-}
-
 func main() {
 	var configPath string
 	api = provisioner.New(configPath)
@@ -212,7 +198,7 @@ help you manage device fleets.
 				return err
 			} else if appId, err := getOrCreateApp(token); err != nil {
 				return err
-			} else if userId, err := getUserId(token); err != nil {
+			} else if userId, err := resin.GetUserId(token); err != nil {
 				return err
 			} else if apiKey, err := resin.GetApiKey("https;//api."+domain, appId, token); err != nil {
 				return err
