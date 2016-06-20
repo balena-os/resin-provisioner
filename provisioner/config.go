@@ -110,17 +110,6 @@ func (c *Config) GetKeysFromApi() error {
 	}
 }
 
-// Read environment-field specified values.
-func (c *Config) ReadEnv() {
-	// TODO: Deduplicate from defaults.go.
-	if domainOverride := os.Getenv(DOMAIN_OVERRIDE_ENV_VAR); domainOverride != "" {
-		c.ApiEndpoint = fmt.Sprintf("https://api.%s", domainOverride)
-		c.VpnEndpoint = fmt.Sprintf("vpn.%s", domainOverride)
-		c.RegistryEndpoint = fmt.Sprintf("registry.%s", domainOverride)
-		c.DeltaEndpoint = fmt.Sprintf("https://delta.%s", domainOverride)
-	}
-}
-
 func (c *Config) SetDomain(domain string) {
 	// TODO: Deduplicate from defaults.go.
 	if domain != "" {
