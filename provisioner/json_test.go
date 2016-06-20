@@ -17,7 +17,7 @@ var minimalJson = `
 
 // Ensure the default values are set + not overwritten.
 func TestParseMinimalConfigJson(t *testing.T) {
-	if conf, err := parseConfig(minimalJson); err != nil {
+	if conf, err := parseConfig(minimalJson, ""); err != nil {
 		t.Fatalf("Parse failed: ERROR: %s", err)
 	} else {
 		if conf.ListenPort == DefaultConfig.ListenPort {

@@ -200,6 +200,7 @@ See https://resin.io for more information about how resin.io can
 help you manage device fleets.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			api.Domain = domain
 			if token, err := authenticate(); err != nil {
 				return err
 			} else if appId, err := getOrCreateApp(token); err != nil {
