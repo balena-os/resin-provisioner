@@ -66,12 +66,12 @@ func login() (token string, err error) {
 				return "", e
 			} else {
 				password := string(p)
-				if token, e := resin.Login("https;//api."+domain, email, password); e != nil {
+				if token, e := resin.Login("https://api."+domain, email, password); e != nil {
 					return "", e
 				} else if token != "" {
 					return token, nil
 				} else {
-					fmt.Printf("Wrong email or password, please try again.")
+					fmt.Println("Wrong email or password, please try again.")
 				}
 			}
 		}
@@ -93,7 +93,7 @@ func signup() (token string, err error) {
 				password := string(p)
 				confirm := string(c)
 				if password == confirm {
-					token, err = resin.Signup("https;//api."+domain, email, password)
+					token, err = resin.Signup("https://api."+domain, email, password)
 					if err == nil && token == "" {
 						return "", errors.New("Signup failed")
 					}
@@ -130,13 +130,13 @@ func createApp(token string) (string, error) {
 		if name, e := prompt(nil, "application name: "); e != nil {
 			return "", e
 		} else if name != "" {
-			return resin.CreateApp("https;//api."+domain, name, token)
+			return resin.CreateApp("https://api."+domain, name, token)
 		}
 	}
 }
 
 func getOrCreateApp(token string) (string, error) {
-	apps, err := resin.GetApps("https;//api."+domain, token)
+	apps, err := resin.GetApps("https://api."+domain, token)
 	if err != nil {
 		return "", err
 	}
@@ -145,17 +145,17 @@ func getOrCreateApp(token string) (string, error) {
 	options := make([]string, len(apps)+1)
 	options[0] = "1"
 	for i, app := range apps {
-		appId, ok := app["id"].(string)
+		appId, ok := app["id"].(float64)
+		if !ok {
+			return "", errors.New("Invalid app id from API")
+		}
+		appIds[i] = strconv.Itoa(int(appId))
+		options[i+1] = strconv.Itoa(i + 2)
+		appName, ok := app["app_name"].(string)
 		if !ok {
 			return "", errors.New("Invalid app list from API")
 		}
-		appIds[i] = appId
-		options[i+1] = strconv.Itoa(i + 1)
-		appName, ok := app["name"].(string)
-		if !ok {
-			return "", errors.New("Invalid app list from API")
-		}
-		appList += fmt.Sprintf("\t%d) %s\n", i+1, appName)
+		appList += fmt.Sprintf("\t%d) %s\n", i+2, appName)
 	}
 	fmt.Printf(`Choose an app for this device, or create one:
 	1) Create new app
@@ -169,7 +169,7 @@ func getOrCreateApp(token string) (string, error) {
 			return createApp(token)
 		default:
 			i, _ := strconv.Atoi(input)
-			i -= 1
+			i -= 2
 			return appIds[i], nil
 		}
 	}
@@ -179,6 +179,7 @@ func getOrCreateApp(token string) (string, error) {
 
 func main() {
 	var configPath string
+	var dryRun bool
 	api = provisioner.New(configPath)
 
 	rootCmd := &cobra.Command{
@@ -200,12 +201,17 @@ help you manage device fleets.
 				return err
 			} else if userId, err := resin.GetUserId(token); err != nil {
 				return err
-			} else if apiKey, err := resin.GetApiKey("https;//api."+domain, appId, token); err != nil {
+			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
 				return err
 			} else {
 				opts := &provisioner.ProvisionOpts{
 					UserId: userId, ApplicationId: appId, ApiKey: apiKey}
 
+				if dryRun {
+					fmt.Printf("Your apikey is %s\n", apiKey)
+					fmt.Printf("Ready to provision a device on appId %s for userId %s\n", appId, userId)
+					return nil
+				}
 				if err := api.Provision(opts); err != nil {
 					return err
 				}
@@ -220,6 +226,7 @@ help you manage device fleets.
 	}
 	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "resin.io", "Domain of the API server in which the device will register")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "path", "p", p, "Path for supervisor's config.json")
+	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryrun", "r", false, "Dry run (do not provision)")
 
 	cmdStatus := &cobra.Command{
 		Use:   "status",

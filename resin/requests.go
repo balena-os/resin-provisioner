@@ -41,6 +41,26 @@ func postUrl(url string, bodyType string, body []byte) ([]byte, int, error) {
 	return b, resp.StatusCode, nil
 }
 
+// Simple http POST helper with an auth token
+func postWithToken(url, token, bodyType string, body []byte) ([]byte, int, error) {
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, 0, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", bodyType)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, 0, err
+	}
+	return b, resp.StatusCode, nil
+}
+
 func isHttpSuccess(status int) bool {
 	return status/100 == 2
 }
@@ -74,7 +94,9 @@ func Signup(endpoint, email, password string) (token string, err error) {
 }
 
 func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) {
-	//client := ppinejs.NewClient(c., "secretapikey")
+	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
+	apps = []map[string]interface{}{map[string]interface{}{"pinejs": "application"}}
+	err = client.List(&apps)
 	return
 }
 
@@ -83,7 +105,14 @@ func CreateApp(endpoint, name, token string) (id string, err error) {
 }
 
 func GetApiKey(endpoint, appId, token string) (apiKey string, err error) {
-	return
+	resp, status, err := postWithToken(endpoint+"/application/"+appId+"/generate-api-key", token, "application/json", []byte("{}"))
+	if err != nil {
+		return "", err
+	} else if !isHttpSuccess(status) {
+		return "", fmt.Errorf("Error getting apikey: %d %s", status, resp)
+	} else {
+		return strings.Trim(string(resp), `"`), nil
+	}
 }
 
 func CreateOrGetDevice(endpoint string, device *map[string]interface{}, apikey string) error {
