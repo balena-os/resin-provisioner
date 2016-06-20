@@ -29,3 +29,7 @@ To execute a provisioning use:
 ```
 $provisioner-simple-client [config path] [user id] [app id] [api key]
 ```
+
+## resin-provision
+
+This is the key tool, execute to provision the device using a CLI interface.
