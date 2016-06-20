@@ -87,18 +87,23 @@ func signup() (token string, err error) {
 			fmt.Printf("password: ")
 			if p, e := gopass.GetPasswdMasked(); e != nil {
 				return "", e
-			} else if c, e := gopass.GetPasswdMasked(); e != nil {
-				return "", e
 			} else {
-				password := string(p)
-				confirm := string(c)
-				if password == confirm {
-					token, err = resin.Signup("https://api."+domain, email, password)
-					if err == nil && token == "" {
-						return "", errors.New("Signup failed")
-					}
+				fmt.Printf("confirm password: ")
+				if c, e := gopass.GetPasswdMasked(); e != nil {
+					return "", e
 				} else {
-					fmt.Println("Passwords don't match, please try again.")
+					password := string(p)
+					confirm := string(c)
+					if password == confirm {
+						token, err = resin.Signup("https://api."+domain, email, password)
+						if err == nil && token == "" {
+							return "", errors.New("Signup failed")
+						} else {
+							return token, nil
+						}
+					} else {
+						fmt.Println("Passwords don't match, please try again.")
+					}
 				}
 			}
 		}

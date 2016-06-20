@@ -8,9 +8,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	pinejs "github.com/resin-io/pinejs-client-go"
+	"github.com/resin-os/resin-provisioner/util"
 )
 
 // Simple http GET request helper
@@ -101,7 +103,23 @@ func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) 
 }
 
 func CreateApp(endpoint, name, token string) (id string, err error) {
-	return
+	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
+	app := make(map[string]interface{})
+	app["pinejs"] = "application"
+	app["app_name"] = name
+	t, e := util.ScanDeviceTypeSlug("/etc/os-release")
+	if e != nil {
+		return "", fmt.Errorf("Could not get device type: %s", e)
+	}
+	app["device_type"] = t
+	if err := client.Create(&app); err != nil {
+		return "", fmt.Errorf("Could not create application: %s", err)
+	}
+	appId, ok := app["id"].(float64)
+	if !ok {
+		return "", errors.New("Invalid app id from API")
+	}
+	return strconv.Itoa(int(appId)), nil
 }
 
 func GetApiKey(endpoint, appId, token string) (apiKey string, err error) {

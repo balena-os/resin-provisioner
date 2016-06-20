@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/resin-os/resin-provisioner/resin"
+	"github.com/resin-os/resin-provisioner/util"
 )
 
 type Config struct {
@@ -49,7 +50,7 @@ func (a *Api) writeConfig(conf *Config) error {
 	if str, err := stringifyConfig(conf); err != nil {
 		return err
 	} else {
-		return atomicWrite(a.ConfigPath, str)
+		return util.AtomicWrite(a.ConfigPath, str)
 	}
 }
 
@@ -71,7 +72,7 @@ func (c *Config) DetectDeviceType() error {
 		return nil
 	}
 
-	if deviceType, err := ScanDeviceTypeSlug(); err != nil {
+	if deviceType, err := util.ScanDeviceTypeSlug(OSRELEASE_PATH); err != nil {
 		return err
 	} else {
 		c.DeviceType = deviceType

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/coreos/go-systemd/dbus"
 	pathLib "path"
+
+	"github.com/resin-os/resin-provisioner/util"
 )
 
 type dbusConnection struct {
@@ -87,7 +89,7 @@ func (c *dbusConnection) RestartUnitNoWait(path string) error {
 }
 
 func (c *dbusConnection) EnableResinServices() error {
-	if services, err := readLines(RESIN_SERVICES_PATH); err != nil {
+	if services, err := util.ReadLines(RESIN_SERVICES_PATH); err != nil {
 		return err
 	} else {
 		paths := make([]string, len(services))
