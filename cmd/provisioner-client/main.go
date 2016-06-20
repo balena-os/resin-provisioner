@@ -13,6 +13,7 @@ import (
 
 	"github.com/howeyc/gopass"
 	"github.com/resin-os/resin-provisioner/provisioner"
+	"github.com/resin-os/resin-provisioner/resin"
 	"github.com/spf13/cobra"
 )
 
@@ -22,6 +23,7 @@ func init() {
 }
 
 var api *provisioner.Api
+var domain string
 
 func readInput() (input string, err error) {
 	i := bufio.NewReader(os.Stdin)
@@ -66,7 +68,7 @@ func login() (token string, err error) {
 				return "", e
 			} else {
 				password := string(p)
-				if token, e := api.Login(email, password); e != nil {
+				if token, e := resin.Login("https;//api."+domain, email, password); e != nil {
 					return "", e
 				} else if token != "" {
 					return token, nil
@@ -93,7 +95,7 @@ func signup() (token string, err error) {
 				password := string(p)
 				confirm := string(c)
 				if password == confirm {
-					return api.Signup(email, password)
+					return resin.Signup("https;//api."+domain, email, password)
 				} else {
 					fmt.Println("Passwords don't match, please try again.")
 				}
@@ -127,13 +129,13 @@ func createApp(token string) (string, error) {
 		if name, e := prompt(nil, "application name: "); e != nil {
 			return "", e
 		} else if name != "" {
-			return api.CreateApp(name, token)
+			return resin.CreateApp("https;//api."+domain, name, token)
 		}
 	}
 }
 
 func getOrCreateApp(token string) (string, error) {
-	apps, err := api.GetApps(token)
+	apps, err := resin.GetApps("https;//api."+domain, token)
 	if err != nil {
 		return "", err
 	}
@@ -189,13 +191,8 @@ func getUserId(token string) (string, error) {
 	}
 }
 
-func getApiKey(token, appId string) (string, error) {
-	return "", errors.New("Not implemented")
-}
-
 func main() {
 	var configPath string
-	var domain string
 	api = provisioner.New(configPath)
 
 	rootCmd := &cobra.Command{
@@ -217,7 +214,7 @@ help you manage device fleets.
 				return err
 			} else if userId, err := getUserId(token); err != nil {
 				return err
-			} else if apiKey, err := api.GetApiKey(appId, token); err != nil {
+			} else if apiKey, err := resin.GetApiKey("https;//api."+domain, appId, token); err != nil {
 				return err
 			} else {
 				opts := &provisioner.ProvisionOpts{

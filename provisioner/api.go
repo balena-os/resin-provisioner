@@ -1,13 +1,13 @@
 package provisioner
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/resin-os/resin-provisioner/resin"
 )
 
 type ProvisionedState int
@@ -122,10 +122,8 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 
 // TODO: Use proper pinejs client for all this.
 func (a Api) RegisterDevice(c *Config) error {
-	newUuid := false
 	registeredAt := time.Now().Unix()
 	if c.Uuid == "" {
-		newUuid = true
 		if uuid, err := randomHexString(UUID_BYTE_LENGTH); err != nil {
 			return err
 		} else {
@@ -140,41 +138,8 @@ func (a Api) RegisterDevice(c *Config) error {
 	device["device_type"] = c.DeviceType
 	device["registered_at"] = registeredAt
 
-	body, err := json.Marshal(device)
+	err := resin.CreateOrGetDevice(c.ApiEndpoint, &device, c.ApiKey)
 	if err != nil {
-		return err
-	}
-	u := c.ApiEndpoint + "/v1/device?apikey=" + c.ApiKey
-	resp, status, err := postUrl(u, "application/json", body)
-	if err != nil {
-		return err
-	} else if !isHttpSuccess(status) {
-		// If device already exists and we're not generating the uuid
-		if (strings.Contains(string(resp), `"uuid" must be unique`) || strings.Contains(string(resp), `Data is referenced by uuid`)) && !newUuid {
-			u := c.ApiEndpoint + `/v1/device?` + pineQueryEscape(`$filter=uuid eq '`+c.Uuid+`'&apikey=`+c.ApiKey)
-			if resp, status, err = getUrl(u); err != nil {
-				return err
-			} else if !isHttpSuccess(status) {
-				return fmt.Errorf("Error getting device from API: %d %s", status, resp)
-			} else {
-				d := make(map[string]interface{})
-				if err = json.Unmarshal(resp, &d); err != nil {
-					return err
-				}
-				if arr, ok := d["d"].([]interface{}); !ok {
-					return errors.New("Invalid object returned from API")
-				} else if len(arr) != 1 {
-					return errors.New("Invalid object returned from API")
-				} else if dev, ok := arr[0].(map[string]interface{}); !ok {
-					return errors.New("Invalid object returned from API")
-				} else {
-					device = dev
-				}
-			}
-		} else {
-			return fmt.Errorf("Error when registering: %d %s", status, resp)
-		}
-	} else if err = json.Unmarshal(resp, &device); err != nil {
 		return err
 	}
 	if deviceId, ok := device["id"].(float64); !ok || deviceId == 0 {
@@ -194,26 +159,4 @@ func (a *Api) ConfigJson() (string, error) {
 	} else {
 		return str, nil
 	}
-}
-
-func (a *Api) Login(email, password string) (token string, err error) {
-	fmt.Printf("Trying to log in with email: %s and password: %s\n", email, password)
-	return "t", errors.New("Not implemented")
-}
-
-func (a *Api) Signup(email, password string) (token string, err error) {
-	fmt.Printf("Trying to sign up with email: %s and password: %s\n", email, password)
-	return "t", errors.New("Not implemented")
-}
-
-func (a *Api) GetApps(token string) (apps []map[string]interface{}, err error) {
-	return
-}
-
-func (a *Api) CreateApp(name, token string) (id string, err error) {
-	return
-}
-
-func (a *Api) GetApiKey(appId, token string) (apiKey string, err error) {
-	return
 }

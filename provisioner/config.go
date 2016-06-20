@@ -1,12 +1,13 @@
 package provisioner
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/resin-os/resin-provisioner/resin"
 )
 
 type Config struct {
@@ -81,17 +82,7 @@ func (c *Config) DetectDeviceType() error {
 
 // Get /config from the Resin API specified at c.ApiEndpoint
 func (c Config) getConfigFromApi() (map[string]interface{}, error) {
-	var conf map[string]interface{}
-	conf = make(map[string]interface{})
-	if r, status, err := getUrl(c.ApiEndpoint + "/config"); err != nil {
-		return nil, err
-	} else if !isHttpSuccess(status) {
-		return nil, fmt.Errorf("Error status from Resin API: %d", status)
-	} else if err = json.Unmarshal(r, &conf); err != nil {
-		return nil, err
-	} else {
-		return conf, nil
-	}
+	return resin.GetConfig(c.ApiEndpoint)
 }
 
 // Get and populate mixpanel and pubnub keys from the Resin API
