@@ -96,13 +96,14 @@ func Signup(endpoint, email, password string) (token string, err error) {
 }
 
 func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) {
+	var deviceType string
 	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
 	apps = []map[string]interface{}{map[string]interface{}{"pinejs": "application"}}
-	t, e := util.ScanDeviceTypeSlug(util.OSRELEASE_PATH)
-	if e != nil {
-		return "", fmt.Errorf("Could not get device type: %s", e)
+	if deviceType, err = util.ScanDeviceTypeSlug(util.OSRELEASE_PATH); err != nil {
+		return "", fmt.Errorf("Could not get device type: %s", err)
 	}
-	err = client.List(&apps, pinejs.NewQueryOptions(pinejs.Filter, "device_type eq '"+t+"'")...)
+	deviceTypeFilter := fmt.Sprintf("device_type eq '%s'", deviceType)
+	err = client.List(&apps, pinejs.NewQueryOptions(pinejs.Filter, deviceTypeFilter)...)
 	return
 }
 
