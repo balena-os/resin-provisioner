@@ -221,6 +221,17 @@ help you manage device fleets.
 				if err := api.Provision(opts); err != nil {
 					return err
 				}
+
+				// Since we're just returning a device URL no
+				// point in worrying about the error.
+				if url, err := api.DeviceUrl(); err == nil {
+					fmt.Println("Your device is now provisioned and is "+
+						"downloading and installing the resin supervisor.")
+					fmt.Println("Your device will show as configuring during "+
+						"this process, appearing online once it's complete.")
+					fmt.Printf("\nYou can access the device at:\n%s\n", url)
+				}
+
 				return nil
 			}
 		},
