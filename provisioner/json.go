@@ -1,6 +1,21 @@
 package provisioner
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strings"
+)
+
+// Avoid screwing up numbers when unmarshalling (i.e. decoding).
+// See http://stackoverflow.com/a/22346593
+func unmarshalRawSafe(str string, out *map[string]interface{}) error {
+	reader := strings.NewReader(str)
+	decoder := json.NewDecoder(reader)
+	// The key to fixing the issue. Forces decoding into json.Number rather
+	// than a possible float64 if it feels like it.
+	decoder.UseNumber()
+
+	return decoder.Decode(out)
+}
 
 func stringifyConfig(conf *Config) (string, error) {
 	var exportedRaw map[string]interface{}
@@ -14,7 +29,7 @@ func stringifyConfig(conf *Config) (string, error) {
 	// can more easily overlay the existing raw data.
 	if bytes, err := json.Marshal(conf); err != nil {
 		return "", err
-	} else if err := json.Unmarshal(bytes, &exportedRaw); err != nil {
+	} else if err := unmarshalRawSafe(string(bytes), &exportedRaw); err != nil {
 		return "", err
 	}
 
@@ -48,7 +63,7 @@ func parseConfig(str string, domain string) (*Config, error) {
 	}
 
 	// Next, we populate the 'Raw' fields as map[string]interface{} values:
-	if err := json.Unmarshal(bytes, &ret.InitialRaw); err != nil {
+	if err := unmarshalRawSafe(string(bytes), &ret.InitialRaw); err != nil {
 		return nil, err
 	}
 
