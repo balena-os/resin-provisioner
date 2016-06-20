@@ -102,10 +102,17 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 			return err
 		}
 
+		// We save the config.json as it is now to persist the uuid
+		if err := a.writeConfig(conf); err != nil {
+			return err
+		}
+
+		// Register the device on resin
 		if err := a.RegisterDevice(conf); err != nil {
 			return err
 		}
 
+		// We write config again with registered_at and deviceId
 		if err := a.writeConfig(conf); err != nil {
 			return err
 		}
