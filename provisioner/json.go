@@ -69,8 +69,6 @@ func parseConfig(str string, domain string) (*Config, error) {
 		return nil, err
 	}
 
-	// Populate any environment-specified fields.
-	ret.ReadEnv()
 	ret.SetDomain(domain)
 
 	return ret, nil
