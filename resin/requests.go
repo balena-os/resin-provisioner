@@ -98,7 +98,11 @@ func Signup(endpoint, email, password string) (token string, err error) {
 func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) {
 	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
 	apps = []map[string]interface{}{map[string]interface{}{"pinejs": "application"}}
-	err = client.List(&apps)
+	t, e := util.ScanDeviceTypeSlug("/etc/os-release")
+	if e != nil {
+		return "", fmt.Errorf("Could not get device type: %s", e)
+	}
+	err = client.List(&apps, pinejs.NewQueryOptions(pinejs.Filter, "device_type eq '"+t+"'")...)
 	return
 }
 
