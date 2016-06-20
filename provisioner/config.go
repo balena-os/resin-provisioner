@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/resin-os/resin-provisioner/resin"
@@ -37,7 +36,6 @@ type Config struct {
 func (a *Api) readConfig() (*Config, error) {
 	if bytes, err := ioutil.ReadFile(a.ConfigPath); os.IsNotExist(err) {
 		// We'll create a new config.json.
-		log.Printf("Empty %s, will create new on write.\n", a.ConfigPath)
 		return parseConfig("{}", a.Domain)
 	} else if err != nil {
 		return nil, err
