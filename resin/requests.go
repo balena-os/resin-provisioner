@@ -100,7 +100,7 @@ func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) 
 	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
 	apps = []map[string]interface{}{map[string]interface{}{"pinejs": "application"}}
 	if deviceType, err = util.ScanDeviceTypeSlug(util.OSRELEASE_PATH); err != nil {
-		return "", fmt.Errorf("Could not get device type: %s", err)
+		return nil, fmt.Errorf("Could not get device type: %s", err)
 	}
 	deviceTypeFilter := fmt.Sprintf("device_type eq '%s'", deviceType)
 	err = client.List(&apps, pinejs.NewQueryOptions(pinejs.Filter, deviceTypeFilter)...)
