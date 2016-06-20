@@ -161,3 +161,16 @@ func (a *Api) ConfigJson() (string, error) {
 		return str, nil
 	}
 }
+
+func (a *Api) DeviceUrl() (string, error) {
+	if conf, err := a.readConfig(); err != nil {
+		return "", fmt.Errorf("Cannot read config: %s", err)
+	} else if conf.ApplicationId == "" {
+		return "", fmt.Errorf("Empty application ID.")
+	} else if conf.DeviceId == 0 {
+		return "", fmt.Errorf("Empty device ID.")
+	} else {
+		return fmt.Sprintf("https://dashboard.%s/apps/%s/devices/%d/summary",
+			a.Domain, conf.ApplicationId, conf.DeviceId), nil
+	}
+}
