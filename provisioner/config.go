@@ -1,28 +1,34 @@
 package provisioner
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/resin-os/resin-provisioner/resin"
+	"github.com/resin-os/resin-provisioner/util"
 )
 
 type Config struct {
-	ApplicationId         string  `json:"applicationId"`
-	ApiKey                string  `json:"apiKey"`
-	UserId                string  `json:"userId"`
-	DeviceType            string  `json:"deviceType"`
-	RegisteredAt          float64 `json:"registered_at,omitempty"`
-	AppUpdatePollInterval string  `json:"appUpdatePollInterval"`
-	ListenPort            string  `json:"listenPort"`
-	VpnPort               string  `json:"vpnPort"`
-	ApiEndpoint           string  `json:"apiEndpoint"`
-	VpnEndpoint           string  `json:"vpnEndpoint"`
-	RegistryEndpoint      string  `json:"registryEndpoint"`
-	DeltaEndpoint         string  `json:"deltaEndpoint"`
-	PubnubSubscribeKey    string  `json:"pubnubSubscribeKey"`
-	PubnubPublishKey      string  `json:"pubnubPublishKey"`
-	MixpanelToken         string  `json:"mixpanelToken"`
+	Uuid                  string `json:"uuid"`
+	ApplicationId         string `json:"applicationId"`
+	ApiKey                string `json:"apiKey"`
+	UserId                string `json:"userId"`
+	DeviceId              int64  `json:"deviceId",omitempty`
+	DeviceType            string `json:"deviceType"`
+	RegisteredAt          int64  `json:"registered_at,omitempty"`
+	AppUpdatePollInterval string `json:"appUpdatePollInterval"`
+	ListenPort            string `json:"listenPort"`
+	VpnPort               string `json:"vpnPort"`
+	ApiEndpoint           string `json:"apiEndpoint"`
+	VpnEndpoint           string `json:"vpnEndpoint"`
+	RegistryEndpoint      string `json:"registryEndpoint"`
+	DeltaEndpoint         string `json:"deltaEndpoint"`
+	PubnubSubscribeKey    string `json:"pubnubSubscribeKey"`
+	PubnubPublishKey      string `json:"pubnubPublishKey"`
+	MixpanelToken         string `json:"mixpanelToken"`
 
 	// See json.go/parseConfig() for more details on what this is for.
 	InitialRaw map[string]interface{} `json:"-"`
@@ -44,7 +50,7 @@ func (a *Api) writeConfig(conf *Config) error {
 	if str, err := stringifyConfig(conf); err != nil {
 		return err
 	} else {
-		return atomicWrite(a.ConfigPath, str)
+		return util.AtomicWrite(a.ConfigPath, str)
 	}
 }
 
@@ -66,7 +72,7 @@ func (c *Config) DetectDeviceType() error {
 		return nil
 	}
 
-	if deviceType, err := ScanDeviceTypeSlug(); err != nil {
+	if deviceType, err := util.ScanDeviceTypeSlug(OSRELEASE_PATH); err != nil {
 		return err
 	} else {
 		c.DeviceType = deviceType
@@ -75,20 +81,39 @@ func (c *Config) DetectDeviceType() error {
 	return nil
 }
 
+// Get /config from the Resin API specified at c.ApiEndpoint
+func (c Config) getConfigFromApi() (map[string]interface{}, error) {
+	return resin.GetConfig(c.ApiEndpoint)
+}
+
+// Get and populate mixpanel and pubnub keys from the Resin API
+func (c *Config) GetKeysFromApi() error {
+	// GET /config from api
+	if conf, err := c.getConfigFromApi(); err != nil {
+		return fmt.Errorf("Error getting config from Resin API: %s", err)
+	} else {
+		i := errors.New("Invalid config received from the Resin API")
+		if t, ok := conf["mixpanelToken"].(string); !ok {
+			return i
+		} else if p, ok := conf["pubnub"].(map[string]interface{}); !ok {
+			return i
+		} else if pk, ok := p["publish_key"].(string); !ok {
+			return i
+		} else if sk, ok := p["subscribe_key"].(string); !ok {
+			return i
+		} else if t == "" || pk == "" || sk == "" {
+			return i
+		} else {
+			c.MixpanelToken = t
+			c.PubnubPublishKey = pk
+			c.PubnubSubscribeKey = sk
+			return nil
+		}
+	}
+}
+
 // Read environment-field specified values.
 func (c *Config) ReadEnv() {
-	if c.PubnubSubscribeKey == "" {
-		c.PubnubSubscribeKey = os.Getenv(PUBNUB_SUBSCRIBE_KEY_ENV_VAR)
-	}
-
-	if c.PubnubPublishKey == "" {
-		c.PubnubPublishKey = os.Getenv(PUBNUB_PUBLISH_KEY_ENV_VAR)
-	}
-
-	if c.MixpanelToken == "" {
-		c.MixpanelToken = os.Getenv(MIXPANEL_TOKEN_ENV_VAR)
-	}
-
 	// TODO: Deduplicate from defaults.go.
 	if domainOverride := os.Getenv(DOMAIN_OVERRIDE_ENV_VAR); domainOverride != "" {
 		c.ApiEndpoint = fmt.Sprintf("https://api.%s", domainOverride)

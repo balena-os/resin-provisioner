@@ -1,0 +1,73 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "ksQZ0Mz0lToeQCvw0zR5kYFd+OM=",
+			"path": "github.com/coreos/go-systemd/dbus",
+			"revision": "a52323565816dee4d2f8dc5fdf1299f48757b848",
+			"revisionTime": "2016-06-17T12:56:53Z"
+		},
+		{
+			"checksumSHA1": "sNkL9OyAGG1aNc/daKrCcrXRIh8=",
+			"path": "github.com/godbus/dbus",
+			"revision": "32c6cc29c14570de4cf6d7e7737d68fb2d01ad15",
+			"revisionTime": "2016-05-06T22:25:50Z"
+		},
+		{
+			"checksumSHA1": "iIUYZyoanCQQTUaWsu8b+iOSPt4=",
+			"path": "github.com/gorilla/context",
+			"revision": "aed02d124ae4a0e94fea4541c8effd05bf0c8296",
+			"revisionTime": "2016-05-25T20:33:19Z"
+		},
+		{
+			"checksumSHA1": "H5f7qNqZl8N83s9cyC7Q1eWgAtI=",
+			"path": "github.com/gorilla/mux",
+			"revision": "9fa818a44c2bf1396a17f9d5a3c0f6dd39d2ff8e",
+			"revisionTime": "2016-06-05T23:35:21Z"
+		},
+		{
+			"checksumSHA1": "WI+JevQX15p9zqngb1BMHvrPAgU=",
+			"path": "github.com/howeyc/gopass",
+			"revision": "66487b23f2880ba32e185121d2cd51a338ea069a",
+			"revisionTime": "2016-03-03T20:01:16Z"
+		},
+		{
+			"checksumSHA1": "0jwv97JmAT8UYiMoNmfCUKS3PCM=",
+			"path": "github.com/resin-io/pinejs-client-go",
+			"revision": "b7bf2b4403bb556d6c6bbf443ab29710651892e1",
+			"revisionTime": "2016-06-20T03:05:54Z"
+		},
+		{
+			"checksumSHA1": "TA7VUAUCWFjlnVIR6r5UCHiJ9GE=",
+			"path": "github.com/resin-io/pinejs-client-go/Godeps/_workspace/src/github.com/bitly/go-simplejson",
+			"revision": "7db29c1e70d1adc4d062b26491ded1f8db694c4b",
+			"revisionTime": "2016-06-19T22:34:20Z"
+		},
+		{
+			"checksumSHA1": "hixBs/nI+PaupabN9usmFKPvgqQ=",
+			"path": "github.com/resin-io/pinejs-client-go/Godeps/_workspace/src/github.com/fatih/structs",
+			"revision": "7db29c1e70d1adc4d062b26491ded1f8db694c4b",
+			"revisionTime": "2016-06-19T22:34:20Z"
+		},
+		{
+			"checksumSHA1": "58DHZSuvG0+mKl+Ijks8uF60+fw=",
+			"path": "github.com/spf13/cobra",
+			"revision": "bc81c21bd0d8be5ba2d6630a505d79d4467566e7",
+			"revisionTime": "2016-06-15T14:36:14Z"
+		},
+		{
+			"checksumSHA1": "45OZzM/Hyc8mwjG2zn38n6bKZws=",
+			"path": "github.com/spf13/pflag",
+			"revision": "367864438f1b1a3c7db4da06a2f55b144e6784e0",
+			"revisionTime": "2016-06-10T19:09:02Z"
+		},
+		{
+			"checksumSHA1": "N5fb5y92DFIP+wUhi1rSwPp9vyk=",
+			"path": "golang.org/x/crypto/ssh/terminal",
+			"revision": "f3241ce8505855877cc8a9717bd61a0f7c4ea83c",
+			"revisionTime": "2016-06-10T10:58:35Z"
+		}
+	],
+	"rootPath": "github.com/resin-os/resin-provisioner"
+}

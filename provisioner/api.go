@@ -1,9 +1,13 @@
 package provisioner
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
+	"time"
+
+	"github.com/resin-os/resin-provisioner/resin"
 )
 
 type ProvisionedState int
@@ -90,10 +94,16 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 		}
 
 		// Ok, now we go for it.
-
 		conf.UserId = opts.UserId
 		conf.ApplicationId = opts.ApplicationId
 		conf.ApiKey = opts.ApiKey
+		if err := conf.GetKeysFromApi(); err != nil {
+			return err
+		}
+
+		if err := a.RegisterDevice(conf); err != nil {
+			return err
+		}
 
 		if err := a.writeConfig(conf); err != nil {
 			return err
@@ -107,6 +117,37 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 
 			return conn.SupervisorEnableStart()
 		}
+	}
+}
+
+// TODO: Use proper pinejs client for all this.
+func (a Api) RegisterDevice(c *Config) error {
+	registeredAt := time.Now().Unix()
+	if c.Uuid == "" {
+		if uuid, err := randomHexString(UUID_BYTE_LENGTH); err != nil {
+			return err
+		} else {
+			c.Uuid = uuid
+		}
+	}
+
+	device := make(map[string]interface{})
+	device["user"] = c.UserId
+	device["application"] = c.ApplicationId
+	device["uuid"] = c.Uuid
+	device["device_type"] = c.DeviceType
+	device["registered_at"] = registeredAt
+
+	err := resin.CreateOrGetDevice(c.ApiEndpoint, &device, c.ApiKey)
+	if err != nil {
+		return err
+	}
+	if deviceId, ok := device["id"].(float64); !ok || deviceId == 0 {
+		return errors.New("Device returned from API is invalid")
+	} else {
+		c.RegisteredAt = int64(registeredAt)
+		c.DeviceId = int64(deviceId)
+		return nil
 	}
 }
 

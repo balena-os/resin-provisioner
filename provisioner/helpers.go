@@ -1,16 +1,17 @@
 package provisioner
 
 import (
+	"crypto/rand"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	pathLib "path"
 	"regexp"
 	"strconv"
-	"strings"
+
+	"github.com/resin-os/resin-provisioner/util"
 )
 
 var apiKeyRegexp = regexp.MustCompile("[a-zA-Z0-9]+")
@@ -34,34 +35,6 @@ func readerToString(r io.Reader) (ret string, err error) {
 	}
 
 	return
-}
-
-// Try to be atomic - write output to temporary file, sync it, rename it
-// to the target file.
-func atomicWrite(path, content string) error {
-	// To avoid cross-device rename issues, create the temporary file in
-	// config.json's containing directory.
-	targetDir := pathLib.Dir(path)
-
-	if tmpFile, err := ioutil.TempFile(targetDir, "provisioner"); err != nil {
-		return err
-	} else {
-		name := tmpFile.Name()
-
-		// We ignore the error so removing the now renamed file isn't an
-		// issue. In error cases we clean up.
-		defer os.Remove(name)
-
-		if _, err := tmpFile.Write([]byte(content)); err != nil {
-			return err
-		} else if err := tmpFile.Sync(); err != nil {
-			return err
-		} else if err := tmpFile.Close(); err != nil {
-			return err
-		}
-
-		return os.Rename(name, path)
-	}
 }
 
 func reportError(status int, writer http.ResponseWriter, req *http.Request,
@@ -105,71 +78,20 @@ func supervisorDbusRunning() (bool, error) {
 	}
 }
 
-func readLines(path string) ([]string, error) {
-	var (
-		bytes []byte
-		err   error
-	)
-
-	if bytes, err = ioutil.ReadFile(path); err != nil {
-		return nil, fmt.Errorf("Can't read %s: %s", path, err)
-	}
-
-	str := strings.TrimSpace(string(bytes))
-	rawLines := strings.Split(str, "\n")
-
-	ret := make([]string, len(rawLines))
-	for i, line := range rawLines {
-		ret[i] = strings.TrimSpace(line)
-	}
-
-	return ret, nil
-}
-
-func getEnvFileFields(path string) (map[string]string, error) {
-	var (
-		lines []string
-		err   error
-	)
-
-	if lines, err = readLines(path); err != nil {
-		return nil, err
-	}
-
-	ret := make(map[string]string)
-	for _, line := range lines {
-		fields := strings.Split(line, "=")
-		if len(fields) != 2 {
-			continue
-		}
-		key := strings.TrimSpace(fields[0])
-		val := strings.TrimSpace(fields[1])
-
-		ret[key] = val
-	}
-
-	return ret, nil
-}
-
-func setEnvFileFields(path string, fields map[string]string) error {
-	lines := make([]string, 0, len(fields))
-
-	for key, val := range fields {
-		lines = append(lines, fmt.Sprintf("%s=%s", key, val))
-	}
-
-	// Add trailing newline too.
-	str := strings.Join(lines, "\n") + "\n"
-
-	return atomicWrite(path, str)
-}
-
 func setSupervisorTag() error {
-	if fields, err := getEnvFileFields(SUPERVISOR_CONF_PATH); err != nil {
+	if fields, err := util.GetEnvFileFields(SUPERVISOR_CONF_PATH); err != nil {
 		return err
 	} else {
 		fields["SUPERVISOR_TAG"] = INIT_UPDATER_SUPERVISOR_TAG
 
-		return setEnvFileFields(SUPERVISOR_CONF_PATH, fields)
+		return util.SetEnvFileFields(SUPERVISOR_CONF_PATH, fields)
 	}
+}
+
+func randomHexString(byteLength uint32) (str string, err error) {
+	slice := make([]byte, byteLength)
+	if _, err = rand.Read(slice); err == nil {
+		str = fmt.Sprintf("%x", slice)
+	}
+	return
 }
