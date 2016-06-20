@@ -72,7 +72,7 @@ func (c *Config) DetectDeviceType() error {
 		return nil
 	}
 
-	if deviceType, err := util.ScanDeviceTypeSlug(OSRELEASE_PATH); err != nil {
+	if deviceType, err := util.ScanDeviceTypeSlug(util.OSRELEASE_PATH); err != nil {
 		return err
 	} else {
 		c.DeviceType = deviceType
