@@ -33,6 +33,24 @@
 			"revisionTime": "2016-03-03T20:01:16Z"
 		},
 		{
+			"checksumSHA1": "0jwv97JmAT8UYiMoNmfCUKS3PCM=",
+			"path": "github.com/resin-io/pinejs-client-go",
+			"revision": "b7bf2b4403bb556d6c6bbf443ab29710651892e1",
+			"revisionTime": "2016-06-20T03:05:54Z"
+		},
+		{
+			"checksumSHA1": "TA7VUAUCWFjlnVIR6r5UCHiJ9GE=",
+			"path": "github.com/resin-io/pinejs-client-go/Godeps/_workspace/src/github.com/bitly/go-simplejson",
+			"revision": "7db29c1e70d1adc4d062b26491ded1f8db694c4b",
+			"revisionTime": "2016-06-19T22:34:20Z"
+		},
+		{
+			"checksumSHA1": "hixBs/nI+PaupabN9usmFKPvgqQ=",
+			"path": "github.com/resin-io/pinejs-client-go/Godeps/_workspace/src/github.com/fatih/structs",
+			"revision": "7db29c1e70d1adc4d062b26491ded1f8db694c4b",
+			"revisionTime": "2016-06-19T22:34:20Z"
+		},
+		{
 			"checksumSHA1": "58DHZSuvG0+mKl+Ijks8uF60+fw=",
 			"path": "github.com/spf13/cobra",
 			"revision": "bc81c21bd0d8be5ba2d6630a505d79d4467566e7",
