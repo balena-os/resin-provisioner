@@ -239,7 +239,7 @@ help you manage device fleets.
 
 	p := os.Getenv("CONFIG_PATH")
 	if p == "" {
-		p = "/mnt/conf/config.json"
+		p = "/mnt/boot/config.json"
 	}
 	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "resin.io", "Domain of the API server in which the device will register")
 	rootCmd.PersistentFlags().StringVarP(&configPath, "path", "p", p, "Path for supervisor's config.json")
