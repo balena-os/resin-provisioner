@@ -6,7 +6,7 @@ const (
 	UPDATE_RESIN_TIMER_PATH = SERVICES_ROOT_PATH + "update-resin-supervisor.timer"
 	UPDATE_RESIN_PATH       = SERVICES_ROOT_PATH + "update-resin-supervisor.service"
 	OPENVPN_PATH            = SERVICES_ROOT_PATH + "openvpn-resin.service"
-	SUPERVISOR_CONF_PATH    = "/etc/supervisor.conf"
+	SUPERVISOR_CONF_PATH    = "/etc/resin-supervisor/supervisor.conf"
 	RESIN_SERVICES_PATH     = "/etc/resin-connectable.conf"
 
 	DEFAULT_RESIN_DOMAIN        = "resin.io"
