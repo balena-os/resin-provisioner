@@ -76,6 +76,8 @@ func (a *Api) StateJson() (ret string, err error) {
 func (a *Api) Provision(opts *ProvisionOpts) error {
 	if state, err := a.State(); err != nil {
 		return err
+	} else if state == Provisioned {
+		return nil
 	} else if state != Unprovisioned {
 		return fmt.Errorf("Cannot provision, device is %s.", state)
 	}
@@ -106,18 +108,7 @@ func (a *Api) Provision(opts *ProvisionOpts) error {
 			return err
 		}
 
-		if err := a.writeConfig(conf); err != nil {
-			return err
-		}
-
-		// Next we need to enable the supervisor systemd service.
-		if conn, err := NewDbus(); err != nil {
-			return err
-		} else {
-			defer conn.Close()
-
-			return conn.SupervisorEnableStart()
-		}
+		return a.writeConfig(conf)
 	}
 }
 
