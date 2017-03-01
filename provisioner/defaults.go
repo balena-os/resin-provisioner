@@ -2,6 +2,7 @@ package provisioner
 
 const (
 	SERVICES_ROOT_PATH      = "/lib/systemd/system/"
+	MOUNT_OVERLAY_PATH      = SERVICES_ROOT_PATH + "etc-systemd-system-resin.target.wants.mount"
 	SUPERVISOR_PATH         = SERVICES_ROOT_PATH + "resin-supervisor.service"
 	UPDATE_RESIN_TIMER_PATH = SERVICES_ROOT_PATH + "update-resin-supervisor.timer"
 	UPDATE_RESIN_PATH       = SERVICES_ROOT_PATH + "update-resin-supervisor.service"
