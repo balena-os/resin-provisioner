@@ -182,18 +182,127 @@ func getOrCreateApp(token string) (string, error) {
 	return "", nil
 }
 
+func getApp(token, appName string) (string, error) {
+	apps, err := resin.GetApps("https://api."+domain, token)
+	if err != nil {
+		return "", err
+	}
+
+	for _, app := range apps {
+		if app["app_name"].(string) == appName {
+			appId, ok := app["id"].(float64)
+			if !ok {
+				return "", errors.New("Invalid app id from API")
+			}
+
+			return strconv.Itoa(int(appId)), nil
+		}
+	}
+
+	return "", errors.New("Application not found")
+}
+
 func main() {
+	var email string
+	var password string
+	var appName string
 	var configPath string
 	var dryRun bool
 
+	c := os.Getenv("CONFIG_PATH")
+	if c == "" {
+		c = "/mnt/boot/config.json"
+	}
+
 	rootCmd := &cobra.Command{
-		Use:   "resin-provison",
+		Use:   "",
 		Short: "Provision this device on resin.io",
 		Long: `
 This command will register this device on resin.io and
 start the Resin Supervisor to allow you to push applications
 to this device.
-It will prompt you to log in or sign up on resin and select/create
+See https://resin.io for more information about how resin.io can
+help you manage device fleets.
+`,
+	}
+	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "resin.io", "Domain of the API server in which the device will register")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", c, "Config path for supervisor's config.json")
+	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryrun", "r", false, "Dry run (do not provision)")
+
+	cmdProvision := &cobra.Command{
+		Use:   "provision",
+		Short: "Provision this device on resin.io",
+		Long: `
+This command will register this device on resin.io and
+start the Resin Supervisor to allow you to push applications
+to this device. It assumes you have already created a resin.io
+account and application.
+See https://resin.io for more information about how resin.io can
+help you manage device fleets.
+`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if email == "" {
+				return errors.New("Email address is required")
+			} else if password  == "" {
+				return errors.New("Password  is required")
+			} else if appName == "" {
+				return errors.New("Application is required")
+			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			api = provisioner.New(configPath)
+			api.Domain = domain
+			if token, e := resin.Login("https://api."+domain, email, password); e != nil {
+				return e
+			} else if token == "" {
+				return errors.New("Wrong email or password, please try again")
+			} else if appId, err := getApp(token, appName); err != nil {
+				return err
+			} else if userId, err := resin.GetUserId(token); err != nil {
+				return err
+			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
+				return err
+			} else {
+				opts := &provisioner.ProvisionOpts{
+					UserId: userId, ApplicationId: appId, ApiKey: apiKey}
+
+				if dryRun {
+					fmt.Printf("Your apikey is %s\n", apiKey)
+					fmt.Printf("Ready to provision a device on appId %s for userId %s\n", appId, userId)
+					return nil
+				}
+				if err := api.Provision(opts); err != nil {
+					return err
+				}
+
+				// Since we're just returning a device URL no
+				// point in worrying about the error.
+				if url, err := api.DeviceUrl(); err == nil {
+					fmt.Println("Your device is now provisioned and is " +
+						"downloading and installing the resin supervisor.")
+					fmt.Println("Your device will show as configuring during " +
+						"this process, appearing online once it's complete.")
+					fmt.Printf("\nYou can access the device at:\n%s\n", url)
+				}
+
+				return nil
+			}
+		},
+	}
+	cmdProvision.Flags().StringVarP(&email, "email", "e", "", "Email address of the account in which the device will register (required)")
+	cmdProvision.Flags().StringVarP(&password, "password", "p", "", "Password of the account in which the device will register (required)")
+	cmdProvision.Flags().StringVarP(&appName, "application", "a", "", "Name of application in which the device will register (required)")
+	rootCmd.AddCommand(cmdProvision)
+
+	cmdInteractive := &cobra.Command{
+		Use:   "interactive",
+		Short: "Interactively provision this device on resin.io",
+		Long: `
+This command will register this device on resin.io and
+start the Resin Supervisor to allow you to push applications
+to this device. It will prompt you to log in or sign up on resin and select/create
 an application for this device to run.
 See https://resin.io for more information about how resin.io can
 help you manage device fleets.
@@ -246,14 +355,7 @@ help you manage device fleets.
 			}
 		},
 	}
-
-	p := os.Getenv("CONFIG_PATH")
-	if p == "" {
-		p = "/mnt/boot/config.json"
-	}
-	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "resin.io", "Domain of the API server in which the device will register")
-	rootCmd.PersistentFlags().StringVarP(&configPath, "path", "p", p, "Path for supervisor's config.json")
-	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryrun", "r", false, "Dry run (do not provision)")
+	rootCmd.AddCommand(cmdInteractive)
 
 	cmdStatus := &cobra.Command{
 		Use:   "status",
