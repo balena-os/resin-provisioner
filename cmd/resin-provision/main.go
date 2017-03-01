@@ -262,11 +262,13 @@ help you manage device fleets.
 				return err
 			} else if userId, err := resin.GetUserId(token); err != nil {
 				return err
+			} else if userName, err := resin.GetUserName(token); err != nil {
+				return err
 			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
 				return err
 			} else {
 				opts := &provisioner.ProvisionOpts{
-					UserId: userId, ApplicationId: appId, ApiKey: apiKey}
+					UserId: userId, UserName: userName, ApplicationId: appId, ApiKey: apiKey}
 
 				if dryRun {
 					fmt.Printf("Your apikey is %s\n", apiKey)
@@ -316,11 +318,13 @@ help you manage device fleets.
 				return err
 			} else if userId, err := resin.GetUserId(token); err != nil {
 				return err
+			} else if userName, err := resin.GetUserName(token); err != nil {
+				return err
 			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
 				return err
 			} else {
 				opts := &provisioner.ProvisionOpts{
-					UserId: userId, ApplicationId: appId, ApiKey: apiKey}
+					UserId: userId, UserName: userName, ApplicationId: appId, ApiKey: apiKey}
 
 				if dryRun {
 					fmt.Printf("Your apikey is %s\n", apiKey)

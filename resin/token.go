@@ -22,3 +22,18 @@ func GetUserId(token string) (string, error) {
 		return strconv.Itoa(int(id)), nil
 	}
 }
+
+func GetUserName(token string) (string, error) {
+	var jsonToken map[string]interface{}
+	if content := strings.Split(token, "."); len(content) != 3 {
+		return "", errors.New("Invalid token")
+	} else if parsedContent, e := base64.RawURLEncoding.DecodeString(content[1]); e != nil {
+		return "", e
+	} else if e = json.Unmarshal(parsedContent, &jsonToken); e != nil {
+		return "", e
+	} else if username, ok := jsonToken["username"].(string); !ok {
+		return "", errors.New("Invalid username in token")
+	} else {
+		return username, nil
+	}
+}
