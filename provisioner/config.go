@@ -15,6 +15,7 @@ type Config struct {
 	ApplicationId         string `json:"applicationId"`
 	ApiKey                string `json:"apiKey"`
 	UserId                string `json:"userId"`
+	UserName              string `json:"username"`
 	DeviceId              int64  `json:"deviceId",omitempty`
 	DeviceType            string `json:"deviceType"`
 	RegisteredAt          int64  `json:"registered_at,omitempty"`
