@@ -2,8 +2,9 @@ package provisioner
 
 import (
 	"fmt"
-	"github.com/coreos/go-systemd/dbus"
 	pathLib "path"
+
+	"github.com/coreos/go-systemd/dbus"
 
 	"github.com/resin-os/resin-provisioner/util"
 )
@@ -103,7 +104,12 @@ func (c *dbusConnection) EnableResinServices() error {
 }
 
 func (c *dbusConnection) SupervisorEnableStart() error {
-	// Start by enabling all required services.
+	// Start by enabling the mount overlay service
+	if err := c.EnableStartUnit(MOUNT_OVERLAY_PATH); err != nil {
+		return err
+	}
+
+	// Enabling all required services.
 	if err := c.EnableResinServices(); err != nil {
 		return err
 	}
