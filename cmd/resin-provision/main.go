@@ -279,6 +279,16 @@ help you manage device fleets.
 					return err
 				}
 
+				// Next we need to enable the supervisor systemd service.
+				if conn, err := provisioner.NewDbus(); err != nil {
+					return err
+				} else {
+					defer conn.Close()
+					if err := conn.SupervisorEnableStart(); err != nil {
+						return err
+					}
+				}
+
 				// Since we're just returning a device URL no
 				// point in worrying about the error.
 				if url, err := api.DeviceUrl(); err == nil {
