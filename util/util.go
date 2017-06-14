@@ -88,6 +88,7 @@ func GetEnvFileFields(path string) (map[string]string, error) {
 		}
 		key := strings.TrimSpace(fields[0])
 		val := strings.TrimSpace(fields[1])
+		val = strings.Trim(val, "\"")
 
 		ret[key] = val
 	}
