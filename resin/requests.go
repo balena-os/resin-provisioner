@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
 	pinejs "github.com/resin-io/pinejs-client-go"
+	"github.com/resin-os/resin-provisioner/defaults"
 	"github.com/resin-os/resin-provisioner/util"
 )
 
@@ -78,7 +78,6 @@ func authPost(endpoint, path string, b map[string]string) (token string, err err
 	if resp, status, err := postUrl(endpoint+path, "application/json", body); err != nil {
 		return "", err
 	} else if !isHttpSuccess(status) {
-		log.Printf("POST to %s returned %d: %s", path, status, resp)
 		return "", nil
 	} else {
 		return string(resp), nil
@@ -99,7 +98,7 @@ func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) 
 	var deviceType string
 	client := pinejs.NewClientWithToken(endpoint+"/v1", token)
 	apps = []map[string]interface{}{map[string]interface{}{"pinejs": "application"}}
-	if deviceType, err = util.ScanDeviceTypeSlug(util.OSRELEASE_PATH); err != nil {
+	if deviceType, err = util.ScanDeviceTypeSlug(defaults.OSRELEASE_PATH); err != nil {
 		return nil, fmt.Errorf("Could not get device type: %s", err)
 	}
 	deviceTypeFilter := fmt.Sprintf("device_type eq '%s'", deviceType)
@@ -112,7 +111,7 @@ func CreateApp(endpoint, name, token string) (id string, err error) {
 	app := make(map[string]interface{})
 	app["pinejs"] = "application"
 	app["app_name"] = name
-	t, e := util.ScanDeviceTypeSlug(util.OSRELEASE_PATH)
+	t, e := util.ScanDeviceTypeSlug(defaults.OSRELEASE_PATH)
 	if e != nil {
 		return "", fmt.Errorf("Could not get device type: %s", e)
 	}

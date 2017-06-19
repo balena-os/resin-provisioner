@@ -3,14 +3,9 @@ package util
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	pathLib "path"
 	"strings"
-)
-
-const (
-	OSRELEASE_PATH = "/etc/os-release"
 )
 
 // Try to be atomic - write output to temporary file, sync it, rename it
@@ -49,6 +44,7 @@ func AtomicWrite(path, content string) error {
 		return os.Rename(name, path)
 	}
 }
+
 func ReadLines(path string) ([]string, error) {
 	var (
 		bytes []byte
@@ -115,7 +111,7 @@ func getOsReleaseSlug(path string) (string, error) {
 	} else {
 		slug := fields["SLUG"]
 		if slug == "" {
-			log.Printf("Could not find 'SLUG' field in %s, defaulting to raspberry-pi\n",
+			fmt.Printf("Could not find 'SLUG' field in %s, defaulting to raspberry-pi\n",
 				path)
 			slug = "raspberry-pi"
 		}

@@ -4,139 +4,168 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/howeyc/gopass"
+	"github.com/resin-os/resin-provisioner/defaults"
 	"github.com/resin-os/resin-provisioner/provisioner"
 	"github.com/resin-os/resin-provisioner/resin"
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	// show date/time in log output.
-	log.SetFlags(log.LstdFlags)
-}
+var domain, configPath, application, email, password, token string
+var dryRun bool
 
-var api *provisioner.Api
-var domain string
-
-func readInput() (input string, err error) {
-	i := bufio.NewReader(os.Stdin)
-	in, err := i.ReadString('\n')
-	if err != nil {
-		return
+func main() {
+	if err := run(); err != nil {
+		os.Exit(1)
 	}
-	input = strings.Trim(in, "\n")
-	return
 }
 
-func contains(s []string, e string) bool {
-	for _, a := range s {
-		if strings.Compare(a, e) == 0 {
-			return true
+func run() error {
+
+	rootCmd := &cobra.Command{
+		Use:   "resin-provision",
+		Short: "Provision this device on resin.io",
+		Long: `
+This tool is a resin component for converting an unmanaged resinOS device into a
+managed resinOS device. This is achieved by setting the configuration needed for
+the supervisor to provision the device against the resin.io servers.
+See https://resin.io for more information about how resin.io can help
+you manage device fleets.`,
+	}
+
+	oneshotCmd := &cobra.Command{
+		Use:   "oneshot",
+		Short: "One-shot mode",
+		Long: `
+Provision the device with a single command, for example:
+./resin-provision oneshot -e email@resin.io -p secret_password -a testApplication`,
+		PreRunE:  validate,
+		RunE:     oneshot,
+		PostRunE: success,
+	}
+
+	interactiveCmd := &cobra.Command{
+		Use:   "interactive",
+		Short: "Interactive mode",
+		Long: `
+Provision the device with a series of interactive prompts. Use
+this option if you need to create a new account or application.`,
+		RunE:     interactive,
+		PostRunE: success,
+	}
+
+	statusCmd := &cobra.Command{
+		Use:   "status",
+		Short: "Check whether this device is provisioned",
+		RunE:  status,
+	}
+
+	rootCmd.AddCommand(oneshotCmd)
+	rootCmd.AddCommand(interactiveCmd)
+	rootCmd.AddCommand(statusCmd)
+
+	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", defaults.RESIN_DOMAIN, "Domain the device will provision to")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", defaults.CONFIG_PATH, "Supervisor config path")
+	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryrun", "r", false, "Dry run (do not provision)")
+	oneshotCmd.Flags().StringVarP(&application, "application", "a", "", "Application the device will provision to")
+	oneshotCmd.Flags().StringVarP(&email, "email", "e", "", "Email addres of the account the device will provision to")
+	oneshotCmd.Flags().StringVarP(&password, "password", "p", "", "Password of the account the device will provision to")
+	oneshotCmd.Flags().StringVarP(&token, "token", "t", "", "User AUTH token")
+
+	return rootCmd.Execute()
+}
+
+func validate(cmd *cobra.Command, args []string) error {
+	if application == "" {
+		return errors.New("Application is required")
+	} else if token == "" {
+		if email == "" {
+			return errors.New("Email is required unless an AUTH token is used")
+		} else if password == "" {
+			return errors.New("Password is required unless an AUTH token is used")
 		}
 	}
-	return false
+
+	return nil
 }
 
-func prompt(options []string, promptMessage string) (input string, err error) {
-	for {
-		fmt.Printf(promptMessage)
-		if input, err = readInput(); err != nil {
-			return
-		} else if len(options) == 0 {
-			return
-		} else if contains(options, input) {
-			return
-		}
+func oneshot(cmd *cobra.Command, args []string) error {
+	if status, err := provisioner.Status(configPath); err != nil {
+		return err
+	} else if status {
+		return nil
+	} else if token, err := getToken(); err != nil {
+		return err
+	} else if token == "" {
+		return errors.New("Wrong email or password, please try again")
+	} else if appId, err := getApp(token, application); err != nil {
+		return err
+	} else if userId, err := resin.GetUserId(token); err != nil {
+		return err
+	} else if userName, err := resin.GetUserName(token); err != nil {
+		return err
+	} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
+		return err
+	} else {
+		return provisioner.Provision(appId, apiKey, userId, userName, configPath, domain, dryRun)
 	}
 }
 
-func login() (token string, err error) {
-	fmt.Println("Logging in...")
-	for {
-		if email, e := prompt(nil, "email: "); err != nil {
-			return "", e
+func interactive(cmd *cobra.Command, args []string) error {
+	if status, err := provisioner.Status(configPath); err != nil {
+		return err
+	} else if status {
+		return nil
+	} else if token, err := authenticate(); err != nil {
+		return err
+	} else if appId, err := getOrCreateApp(token); err != nil {
+		return err
+	} else if userId, err := resin.GetUserId(token); err != nil {
+		return err
+	} else if userName, err := resin.GetUserName(token); err != nil {
+		return err
+	} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
+		return err
+	} else {
+		return provisioner.Provision(appId, apiKey, userId, userName, configPath, domain, dryRun)
+	}
+}
+
+func success(cmd *cobra.Command, args []string) error {
+	fmt.Println("Your device is now provisioned and is " +
+		"downloading and installing the resin supervisor")
+	fmt.Println("Your device may show as configuring during " +
+		"this process, appearing online once it's complete")
+
+	return nil
+}
+
+func status(cmd *cobra.Command, args []string) error {
+	if status, err := provisioner.Status(configPath); err != nil {
+		return err
+	} else if status {
+		if url, err := provisioner.Url(configPath, domain); err != nil {
+			return err
 		} else {
-			fmt.Printf("password: ")
-			if p, e := gopass.GetPasswdMasked(); e != nil {
-				return "", e
-			} else {
-				password := string(p)
-				if token, e := resin.Login("https://api."+domain, email, password); e != nil {
-					return "", e
-				} else if token != "" {
-					return token, nil
-				} else {
-					fmt.Println("Wrong email or password, please try again.")
-				}
-			}
+			fmt.Println("Your device is provisioned")
+			fmt.Printf("You can access the device at: %s\n", url)
 		}
-	}
-}
-
-func signup() (token string, err error) {
-	fmt.Println("Creating new user...")
-	if email, e := prompt(nil, "email: "); err != nil {
-		return "", e
 	} else {
-		for {
-			fmt.Printf("password: ")
-			if p, e := gopass.GetPasswdMasked(); e != nil {
-				return "", e
-			} else {
-				fmt.Printf("confirm password: ")
-				if c, e := gopass.GetPasswdMasked(); e != nil {
-					return "", e
-				} else {
-					password := string(p)
-					confirm := string(c)
-					if password == confirm {
-						token, err = resin.Signup("https://api."+domain, email, password)
-						if err == nil && token == "" {
-							return "", errors.New("Signup failed")
-						} else {
-							return token, nil
-						}
-					} else {
-						fmt.Println("Passwords don't match, please try again.")
-					}
-				}
-			}
-		}
+		fmt.Println("Your device is not provisioned")
 	}
+
+	return nil
 }
 
-func authenticate() (token string, err error) {
-	fmt.Println("Welcome to resin.io")
-	fmt.Printf(`Please log in or sign up:
-	1) Log in
-	2) Sign up
-`)
-	if input, e := prompt([]string{"1", "2"}, "> "); err != nil {
-		return "", e
+func getToken() (string, error) {
+	if token == "" {
+		return resin.Login("https://api."+domain, email, password)
 	} else {
-		switch input {
-		case "1":
-			return login()
-		case "2":
-			return signup()
-		}
-	}
-
-	return "", nil
-}
-
-func createApp(token string) (string, error) {
-	for {
-		if name, e := prompt(nil, "application name: "); e != nil {
-			return "", e
-		} else if name != "" {
-			return resin.CreateApp("https://api."+domain, name, token)
-		}
+		return token, nil
 	}
 }
 
@@ -145,41 +174,46 @@ func getOrCreateApp(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	appIds := make([]string, len(apps))
-	appList := ""
-	options := make([]string, len(apps)+1)
-	options[0] = "1"
-	for i, app := range apps {
-		appId, ok := app["id"].(float64)
-		if !ok {
-			return "", errors.New("Invalid app id from API")
-		}
-		appIds[i] = strconv.Itoa(int(appId))
-		options[i+1] = strconv.Itoa(i + 2)
+
+	options := make([]string, 0)
+	list := make([]string, 0)
+
+	options = append(options, "1")
+	list = append(list, "Create new app")
+
+	for index, app := range apps {
 		appName, ok := app["app_name"].(string)
 		if !ok {
-			return "", errors.New("Invalid app list from API")
+			return "", errors.New("Invalid app name from API")
 		}
-		appList += fmt.Sprintf("\t%d) %s\n", i+2, appName)
+
+		list = append(list, appName)
+		options = append(options, strconv.Itoa(index+2))
 	}
-	fmt.Printf(`Choose an app for this device, or create one:
-	1) Create new app
-`)
-	fmt.Printf(appList)
-	if input, e := prompt(options, "> "); err != nil {
-		return "", e
+
+	fmt.Println("Choose an app for this device, or create one:")
+	for index := range options {
+		fmt.Printf("%s) %s", options[index], list[index])
+
+		if index < len(options)-1 {
+			fmt.Printf(" \n")
+		}
+	}
+
+	if input, err := prompt(options, "\n> "); err != nil {
+		return "", err
 	} else {
 		switch input {
 		case "1":
 			return createApp(token)
 		default:
-			i, _ := strconv.Atoi(input)
-			i -= 2
-			return appIds[i], nil
+			if index, err := strconv.Atoi(input); err != nil {
+				return "", err
+			} else {
+				return getApp(token, list[index-1])
+			}
 		}
 	}
-
-	return "", nil
 }
 
 func getApp(token, appName string) (string, error) {
@@ -192,7 +226,7 @@ func getApp(token, appName string) (string, error) {
 		if app["app_name"].(string) == appName {
 			appId, ok := app["id"].(float64)
 			if !ok {
-				return "", errors.New("Invalid app id from API")
+				return "", errors.New("Invalid app ID from API")
 			}
 
 			return strconv.Itoa(int(appId)), nil
@@ -202,191 +236,121 @@ func getApp(token, appName string) (string, error) {
 	return "", errors.New("Application not found")
 }
 
-func main() {
-	var email string
-	var password string
-	var appName string
-	var configPath string
-	var dryRun bool
+func createApp(token string) (string, error) {
+	for {
+		if name, err := prompt(nil, "application name: "); err != nil {
+			return "", err
+		} else if name != "" {
+			return resin.CreateApp("https://api."+domain, name, token)
+		}
+	}
+}
 
-	c := os.Getenv("CONFIG_PATH")
-	if c == "" {
-		c = "/mnt/boot/config.json"
+func authenticate() (string, error) {
+	fmt.Println("Welcome to resin.io")
+	fmt.Printf(`Please log in or sign up:
+1) Log in
+2) Sign up`)
+
+	if input, err := prompt([]string{"1", "2"}, "\n> "); err != nil {
+		return "", err
+	} else {
+		switch input {
+		case "1":
+			return login()
+		case "2":
+			return signup()
+		}
 	}
 
-	rootCmd := &cobra.Command{
-		Use:   "",
-		Short: "Provision this device on resin.io",
-		Long: `
-This command will register this device on resin.io and
-start the Resin Supervisor to allow you to push applications
-to this device.
-See https://resin.io for more information about how resin.io can
-help you manage device fleets.
-`,
-	}
-	rootCmd.PersistentFlags().StringVarP(&domain, "domain", "d", "resin.io", "Domain of the API server in which the device will register")
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", c, "Config path for supervisor's config.json")
-	rootCmd.PersistentFlags().BoolVarP(&dryRun, "dryrun", "r", false, "Dry run (do not provision)")
+	return "", nil
 
-	cmdProvision := &cobra.Command{
-		Use:   "provision",
-		Short: "Provision this device on resin.io",
-		Long: `
-This command will register this device on resin.io and
-start the Resin Supervisor to allow you to push applications
-to this device. It assumes you have already created a resin.io
-account and application.
-See https://resin.io for more information about how resin.io can
-help you manage device fleets.
-`,
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if email == "" {
-				return errors.New("Email address is required")
-			} else if password  == "" {
-				return errors.New("Password  is required")
-			} else if appName == "" {
-				return errors.New("Application is required")
-			}
+}
 
-			return nil
-		},
-		RunE: func(cmd *cobra.Command, args []string) error {
-			api = provisioner.New(configPath)
-			api.Domain = domain
-			if token, e := resin.Login("https://api."+domain, email, password); e != nil {
-				return e
-			} else if token == "" {
-				return errors.New("Wrong email or password, please try again")
-			} else if appId, err := getApp(token, appName); err != nil {
-				return err
-			} else if userId, err := resin.GetUserId(token); err != nil {
-				return err
-			} else if userName, err := resin.GetUserName(token); err != nil {
-				return err
-			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
-				return err
+func login() (string, error) {
+	fmt.Println("Logging in...")
+	for {
+		if email, err := prompt(nil, "email: "); err != nil {
+			return "", err
+		} else {
+			fmt.Printf("password: ")
+			if p, err := gopass.GetPasswdMasked(); err != nil {
+				return "", err
 			} else {
-				opts := &provisioner.ProvisionOpts{
-					UserId: userId, UserName: userName, ApplicationId: appId, ApiKey: apiKey}
-
-				if dryRun {
-					fmt.Printf("Your apikey is %s\n", apiKey)
-					fmt.Printf("Ready to provision a device on appId %s for userId %s\n", appId, userId)
-					return nil
-				}
-				if err := api.Provision(opts); err != nil {
-					return err
-				}
-
-				// Next we need to enable the supervisor systemd service.
-				if conn, err := provisioner.NewDbus(); err != nil {
-					return err
+				password := string(p)
+				if token, err := resin.Login("https://api."+domain, email, password); err != nil {
+					return "", err
+				} else if token != "" {
+					return token, nil
 				} else {
-					defer conn.Close()
-					if err := conn.SupervisorEnableStart(); err != nil {
-						return err
+					fmt.Println("Wrong email or password, please try again")
+				}
+			}
+		}
+	}
+}
+
+func signup() (string, error) {
+	fmt.Println("Creating new user...")
+	if email, err := prompt(nil, "email: "); err != nil {
+		return "", err
+	} else {
+		for {
+			fmt.Printf("password: ")
+			if p, err := gopass.GetPasswdMasked(); err != nil {
+				return "", err
+			} else {
+				fmt.Printf("confirm password: ")
+				if c, err := gopass.GetPasswdMasked(); err != nil {
+					return "", err
+				} else {
+					password := string(p)
+					confirm := string(c)
+					if password == confirm {
+						token, err := resin.Signup("https://api."+domain, email, password)
+						if err == nil && token == "" {
+							return "", errors.New("Signup failed")
+						} else {
+							return token, nil
+						}
+					} else {
+						fmt.Println("Passwords don't match, please try again")
 					}
 				}
-
-				// Since we're just returning a device URL no
-				// point in worrying about the error.
-				if url, err := api.DeviceUrl(); err == nil {
-					fmt.Println("Your device is now provisioned and is " +
-						"downloading and installing the resin supervisor.")
-					fmt.Println("Your device will show as configuring during " +
-						"this process, appearing online once it's complete.")
-					fmt.Printf("\nYou can access the device at:\n%s\n", url)
-				}
-
-				return nil
 			}
-		},
+		}
 	}
-	cmdProvision.Flags().StringVarP(&email, "email", "e", "", "Email address of the account in which the device will register (required)")
-	cmdProvision.Flags().StringVarP(&password, "password", "p", "", "Password of the account in which the device will register (required)")
-	cmdProvision.Flags().StringVarP(&appName, "application", "a", "", "Name of application in which the device will register (required)")
-	rootCmd.AddCommand(cmdProvision)
+}
 
-	cmdInteractive := &cobra.Command{
-		Use:   "interactive",
-		Short: "Interactively provision this device on resin.io",
-		Long: `
-This command will register this device on resin.io and
-start the Resin Supervisor to allow you to push applications
-to this device. It will prompt you to log in or sign up on resin and select/create
-an application for this device to run.
-See https://resin.io for more information about how resin.io can
-help you manage device fleets.
-`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			api = provisioner.New(configPath)
-			api.Domain = domain
-			if token, err := authenticate(); err != nil {
-				return err
-			} else if appId, err := getOrCreateApp(token); err != nil {
-				return err
-			} else if userId, err := resin.GetUserId(token); err != nil {
-				return err
-			} else if userName, err := resin.GetUserName(token); err != nil {
-				return err
-			} else if apiKey, err := resin.GetApiKey("https://api."+domain, appId, token); err != nil {
-				return err
-			} else {
-				opts := &provisioner.ProvisionOpts{
-					UserId: userId, UserName: userName, ApplicationId: appId, ApiKey: apiKey}
-
-				if dryRun {
-					fmt.Printf("Your apikey is %s\n", apiKey)
-					fmt.Printf("Ready to provision a device on appId %s for userId %s\n", appId, userId)
-					return nil
-				}
-				if err := api.Provision(opts); err != nil {
-					return err
-				}
-
-				// Next we need to enable the supervisor systemd service.
-				if conn, err := provisioner.NewDbus(); err != nil {
-					return err
-				} else {
-					defer conn.Close()
-					if err := conn.SupervisorEnableStart(); err != nil {
-						return err
-					}
-				}
-
-				// Since we're just returning a device URL no
-				// point in worrying about the error.
-				if url, err := api.DeviceUrl(); err == nil {
-					fmt.Println("Your device is now provisioned and is " +
-						"downloading and installing the resin supervisor.")
-					fmt.Println("Your device will show as configuring during " +
-						"this process, appearing online once it's complete.")
-					fmt.Printf("\nYou can access the device at:\n%s\n", url)
-				}
-
-				return nil
-			}
-		},
+func prompt(options []string, promptMessage string) (input string, err error) {
+	for {
+		fmt.Printf(promptMessage)
+		if input, err = readInput(); err != nil {
+			return
+		} else if len(options) == 0 {
+			return
+		} else if contains(options, input) {
+			return
+		} else {
+			fmt.Printf("Not a valid option")
+		}
 	}
-	rootCmd.AddCommand(cmdInteractive)
+}
 
-	cmdStatus := &cobra.Command{
-		Use:   "status",
-		Short: "Find out if this device is provisioned",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			api := provisioner.New(configPath)
-			if state, err := api.State(); err != nil {
-				return err
-			} else {
-				fmt.Printf("This device is %s\n", state)
-				return nil
-			}
-		},
+func readInput() (string, error) {
+	i := bufio.NewReader(os.Stdin)
+	if in, err := i.ReadString('\n'); err != nil {
+		return "", err
+	} else {
+		return strings.Trim(in, "\n"), nil
 	}
-	rootCmd.AddCommand(cmdStatus)
+}
 
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if strings.Compare(a, e) == 0 {
+			return true
+		}
 	}
+	return false
 }
