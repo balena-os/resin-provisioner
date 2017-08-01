@@ -1,0 +1,35 @@
+hash: 88741e7d00165a45c42bbd6060c320480ef7bf72f428bb8854ec2bed805cc2b3
+updated: 2017-08-01T17:41:59.816536314+01:00
+imports:
+- name: github.com/coreos/go-systemd
+  version: 48702e0da86bd25e76cfef347e2adeb434a0d0a6
+  subpackages:
+  - dbus
+- name: github.com/godbus/dbus
+  version: b038411ec341afd52c6d36d8baae92a29e6e8a9e
+- name: github.com/gorilla/context
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
+- name: github.com/gorilla/mux
+  version: ac112f7d75a0714af1bd86ab17749b31f7809640
+- name: github.com/howeyc/gopass
+  version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/resin-io/pinejs-client-go
+  version: ac4f79c5f7e7a809d3b5f35e846bf988ac204e75
+  subpackages:
+  - Godeps/_workspace/src/github.com/bitly/go-simplejson
+  - Godeps/_workspace/src/github.com/fatih/structs
+- name: github.com/spf13/cobra
+  version: b4dbd37a01839e0653eec12aa4bbb2a2ce7b2a37
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: golang.org/x/crypto
+  version: 850760c427c516be930bc91280636328f1a62286
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 99f16d856c9836c42d24e7ab64ea72916925fa97
+  subpackages:
+  - unix
+testImports: []

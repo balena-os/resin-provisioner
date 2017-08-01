@@ -1,35 +1,18 @@
 # resin-provisioner
 
-This is a resin supervisor component designed to allow provisioning of a resin
-OS device against resin servers.
+This tool is a resin component for converting an unmanaged resinOS device into a
+managed resinOS device. This is achieved by provisioning the device against the
+resin.io servers.
 
-## Usage
+The core functionality is provided by the `resin-provision` binary which
+includes two modes of interaction: interactive mode and oneshot mode.
 
-The core functionality is provided by the `provisioner` package, and 2 utility
-commands are provided:
+## Interactive mode
+This mode is interactive and allows the user to create new accounts and
+applications. It is used by the `local promote` command in the [Resin
+CLI](https://github.com/resin-io/resin-cli)
 
-### provisioner-server
-
-Offers provisioner functionality as an HTTP API via the specified socket file.
-
-```
-$ provisioner-server [socket path] [config.json path]
-```
-
-### provisioner-simple-client
-
-This is a simple provisioning tool. To query the provisioned state use:
-
-```
-$ provisioner-simple-client [config path]
-```
-
-To execute a provisioning use:
-
-```
-$provisioner-simple-client [config path] [user id] [app id] [api key]
-```
-
-## resin-provision
-
-This is the key tool, execute to provision the device using a CLI interface.
+## Oneshot mode
+This mode allows the user to provision a resinOS device with a single command.
+It is designed to be used within external applications or as part of an
+automated process.

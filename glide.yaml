@@ -1,0 +1,9 @@
+package: github.com/resin-os/resin-provisioner
+import:
+- package: github.com/coreos/go-systemd
+  subpackages:
+  - dbus
+- package: github.com/gorilla/mux
+- package: github.com/howeyc/gopass
+- package: github.com/resin-io/pinejs-client-go
+- package: github.com/spf13/cobra

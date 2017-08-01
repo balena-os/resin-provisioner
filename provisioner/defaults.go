@@ -11,6 +11,7 @@ const (
 
 	DEFAULT_RESIN_DOMAIN        = "resin.io"
 	INIT_UPDATER_SUPERVISOR_TAG = "production"
+	CONFIG_PATH                 = "/mnt/boot/config.json"
 
 	UUID_BYTE_LENGTH = 31
 )

@@ -54,7 +54,7 @@ func (a *Api) writeConfig(conf *Config) error {
 }
 
 func (c *Config) ProvisionedState() ProvisionedState {
-	if c.ApplicationId == "" || c.ApiKey == "" {
+	if c.ApplicationId == "" {
 		return Unprovisioned
 	}
 
