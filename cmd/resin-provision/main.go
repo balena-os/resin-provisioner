@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var domain, configPath, application, email, password, token string
+var domain, configPath, application, email, password, code, token string
 var dryRun bool
 
 func main() {
@@ -74,6 +74,7 @@ this option if you need to create a new account or application.`,
 	oneshotCmd.Flags().StringVarP(&application, "application", "a", "", "Application the device will provision to")
 	oneshotCmd.Flags().StringVarP(&email, "email", "e", "", "Email addres of the account the device will provision to")
 	oneshotCmd.Flags().StringVarP(&password, "password", "p", "", "Password of the account the device will provision to")
+	oneshotCmd.Flags().StringVarP(&code, "2fa", "f", "", "2FA code of the account the device will provision to")
 	oneshotCmd.Flags().StringVarP(&token, "token", "t", "", "User AUTH token")
 
 	return rootCmd.Execute()
@@ -98,11 +99,25 @@ func oneshot(cmd *cobra.Command, args []string) error {
 		return err
 	} else if status {
 		return nil
-	} else if token, err := getToken(); err != nil {
-		return err
 	} else if token == "" {
-		return errors.New("Wrong email or password, please try again")
-	} else if appId, err := getApp(token, application); err != nil {
+		if token, err = resin.Login("https://api."+domain, email, password); err != nil {
+			return err
+		} else if token == "" {
+			return errors.New("Wrong email or password, please try again")
+		} else if twoFactorRequired, err := resin.GetTwoFactorRequired(token); err != nil {
+			return err
+		} else if twoFactorRequired {
+			challengeToken := token
+			token = ""
+			if token, err = resin.TwoFactorChallenge("https://api."+domain, challengeToken, code); err != nil {
+				return err
+			} else if token == "" {
+				return errors.New("Wrong or missing 2FA code, please try again")
+			}
+		}
+	}
+
+	if appId, err := getApp(token, application); err != nil {
 		return err
 	} else if userId, err := resin.GetUserId(token); err != nil {
 		return err
@@ -136,10 +151,12 @@ func interactive(cmd *cobra.Command, args []string) error {
 }
 
 func success(cmd *cobra.Command, args []string) error {
-	fmt.Println("Your device is now provisioned and is " +
-		"downloading and installing the resin supervisor")
-	fmt.Println("Your device may show as configuring during " +
-		"this process, appearing online once it's complete")
+	if !dryRun {
+		fmt.Println("Your device is now provisioned and is " +
+			"downloading and installing the resin supervisor")
+		fmt.Println("Your device may show as configuring during " +
+			"this process, appearing online once it's complete")
+	}
 
 	return nil
 }
@@ -159,14 +176,6 @@ func status(cmd *cobra.Command, args []string) error {
 	}
 
 	return nil
-}
-
-func getToken() (string, error) {
-	if token == "" {
-		return resin.Login("https://api."+domain, email, password)
-	} else {
-		return token, nil
-	}
 }
 
 func getOrCreateApp(token string) (string, error) {
@@ -277,14 +286,27 @@ func login() (string, error) {
 			if p, err := gopass.GetPasswdMasked(); err != nil {
 				return "", err
 			} else {
+				token = ""
 				password := string(p)
-				if token, err := resin.Login("https://api."+domain, email, password); err != nil {
+				if token, err = resin.Login("https://api."+domain, email, password); err != nil {
 					return "", err
-				} else if token != "" {
-					return token, nil
-				} else {
-					fmt.Println("Wrong email or password, please try again")
+				} else if token == "" {
+					return "", errors.New("Wrong email or password, please try again")
+				} else if twoFactorRequired, err := resin.GetTwoFactorRequired(token); err != nil {
+					return "", err
+				} else if twoFactorRequired {
+					challengeToken := token
+					token = ""
+					if code, err = prompt(nil, "2FA code: "); err != nil {
+						return "", err
+					} else if token, err = resin.TwoFactorChallenge("https://api."+domain, challengeToken, code); err != nil {
+						return "", err
+					} else if token == "" {
+						return "", errors.New("Wrong or missing 2FA code, please try again")
+					}
 				}
+
+				return token, nil
 			}
 		}
 	}

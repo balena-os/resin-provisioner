@@ -84,6 +84,20 @@ func authPost(endpoint, path string, b map[string]string) (token string, err err
 	}
 }
 
+func authPostWithToken(endpoint, path, challengeToken string, b map[string]string) (token string, err error) {
+	body, err := json.Marshal(b)
+	if err != nil {
+		return "", err
+	}
+	if resp, status, err := postWithToken(endpoint+path, challengeToken, "application/json", body); err != nil {
+		return "", err
+	} else if !isHttpSuccess(status) {
+		return "", nil
+	} else {
+		return string(resp), nil
+	}
+}
+
 func Login(endpoint, email, password string) (token string, err error) {
 	b := map[string]string{"username": email, "password": password}
 	return authPost(endpoint, "/login_", b)
@@ -92,6 +106,11 @@ func Login(endpoint, email, password string) (token string, err error) {
 func Signup(endpoint, email, password string) (token string, err error) {
 	b := map[string]string{"email": email, "password": password}
 	return authPost(endpoint, "/user/register", b)
+}
+
+func TwoFactorChallenge(endpoint, challengeToken, code string) (token string, err error) {
+	b := map[string]string{"code": code}
+	return authPostWithToken(endpoint, "/auth/totp/verify", challengeToken, b)
 }
 
 func GetApps(endpoint, token string) (apps []map[string]interface{}, err error) {
